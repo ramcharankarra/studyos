@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #14b8a6;      /* Teal 500 */
+  --color-primary-hover: #0d9488;
+  --color-secondary: #f97316;    /* Orange 500 */
+  --color-accent-purple: #8b5cf6;
+  --color-accent-blue: #3b82f6;
+  --color-accent-coral: #f43f5e;
+  --color-accent-green: #22c55e;
+  --color-accent-yellow: #f59e0b;
+  
+  --color-bg-base: #f8fafc;      /* Slate 50 */
+  --color-surface: #ffffff;      /* White */
+  --color-border: #e2e8f0;       /* Slate 200 */
+  
+  --color-text-primary: #0f172a; /* Slate 900 */
+  --color-text-secondary: #475569; /* Slate 600 */
+  --color-text-muted: #94a3b8;   /* Slate 400 */
+
+  --font-sans: 'Nunito', 'Quicksand', system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-base text-text-primary font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight text-text-primary;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-surface border-2 border-border shadow-[0_4px_0_0_#e2e8f0] rounded-2xl transition-all duration-200;
+  }
+  
+  .glass-card:hover {
+    @apply shadow-[0_6px_0_0_#e2e8f0] -translate-y-0.5;
+  }
+
+  .interactive-btn {
+    @apply transition-all duration-200 active:translate-y-1 active:shadow-none;
+  }
+}
+
+/* Custom Scrollbar for Playful Theme */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9; 
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; 
+  border-radius: 8px;
+  border: 2px solid #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; 
+}
