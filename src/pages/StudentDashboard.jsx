@@ -86,7 +86,7 @@ export function StudentDashboard() {
       if (quizzesDone > 0) {
         const recentQuizzes = quizAttempts.slice(0, 7).reverse();
         const chartData = recentQuizzes.map((q, idx) => ({
-          name: \`Quiz \${idx + 1}\`,
+          name: `Quiz ${idx + 1}`,
           score: Math.round(((q.score || 0) / (q.totalMarks || q.totalScore || 1)) * 100)
         }));
         setPerformanceData(chartData);
@@ -140,7 +140,7 @@ export function StudentDashboard() {
       const newRecs = profile.masteryLevels.map(ml => ({
         studentId: currentUser.uid,
         title: ml.subject,
-        message: \`Current mastery level: \${ml.level}\`,
+        message: `Current mastery level: ${ml.level}`,
         relatedSubject: ml.subject,
         mastery: ml.progress,
         type: ml.progress < 70 ? 'Revise' : 'Focus',
@@ -197,7 +197,7 @@ export function StudentDashboard() {
         
         {/* Top Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Average Score" value={\`\${stats.avgScore}%\`} icon={TrendingUp} color="teal" />
+          <StatCard title="Average Score" value={`${stats.avgScore}%`} icon={TrendingUp} color="teal" />
           <StatCard title="Classes Joined" value={stats.classesJoined} icon={BookOpen} color="orange" />
           <StatCard title="Quizzes Done" value={stats.quizzesDone} icon={Target} color="blue" />
           <StatCard title="AI Queries" value={stats.aiQueries} icon={BrainCircuit} color="purple" />
@@ -262,7 +262,7 @@ export function StudentDashboard() {
                               {rec.message}
                             </p>
                           </div>
-                          <Button onClick={() => navigate('/dashboard/student/quizzes')} variant="primary" className={\`border-b-4 text-white \${btnColor}\`}>
+                          <Button onClick={() => navigate('/dashboard/student/quizzes')} variant="primary" className={`border-b-4 text-white ${btnColor}`}>
                             {isRevise ? 'Review Topic' : 'Continue'}
                           </Button>
                         </div>
@@ -341,9 +341,9 @@ export function StudentDashboard() {
                   </div>
                 ) : (
                   upcomingClasses.map(cls => (
-                    <div key={cls.id} className={\`p-5 rounded-2xl border-2 transition-colors \${cls.status === 'active' ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100 hover:border-[#f43f5e]/50'}\`}>
+                    <div key={cls.id} className={`p-5 rounded-2xl border-2 transition-colors ${cls.status === 'active' ? 'bg-red-50 border-red-200' : 'bg-white border-slate-100 hover:border-[#f43f5e]/50'}`}>
                       <div className="flex justify-between items-center mb-2">
-                        <span className={\`text-xs font-bold uppercase tracking-widest flex items-center \${cls.status === 'active' ? 'text-red-600' : 'text-[#f43f5e]'}\`}>
+                        <span className={`text-xs font-bold uppercase tracking-widest flex items-center ${cls.status === 'active' ? 'text-red-600' : 'text-[#f43f5e]'}`}>
                           <Clock className="w-3 h-3 mr-1" /> {new Date(cls.scheduledTimestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </span>
                         {cls.status === 'active' && (
