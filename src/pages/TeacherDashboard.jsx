@@ -12,6 +12,7 @@ import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db, auth } from '../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, getDocs, onSnapshot, orderBy, collectionGroup } from 'firebase/firestore';
 
 const teacherLinks = [
@@ -39,17 +40,29 @@ export function TeacherDashboard() {
   const [localUser, setLocalUser] = useState(null);
 
   useEffect(() => {
-    import('firebase/auth').then(({ onAuthStateChanged }) => {
-      const unsub = onAuthStateChanged(auth, (user) => {
-        setLocalUser(user);
-        setLoadingAuth(false);
-      });
-      return () => unsub();
+    const timeout = setTimeout(() => {
+      setLoadingAuth(false);
+    }, 3000);
+
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setLocalUser(user || null);
+      setLoadingAuth(false);
+      clearTimeout(timeout);
     });
+
+    return () => {
+      unsub();
+      clearTimeout(timeout);
+    };
   }, []);
 
   useEffect(() => {
-    if (loadingAuth === false && localUser?.uid) {
+    if (loadingAuth) return;
+
+    if (!localUser?.uid) {
+      navigate('/login');
+      return;
+    }
       const qNotif = query(
         collection(db, 'notifications'),
         where('userId', '==', localUser.uid)
@@ -64,8 +77,7 @@ export function TeacherDashboard() {
       loadDashboardData(localUser.uid);
 
       return () => unsubscribe();
-    }
-  }, [loadingAuth, localUser]);
+  }, [loadingAuth, localUser, navigate]);
 
   const loadDashboardData = async (uid) => {
     try {

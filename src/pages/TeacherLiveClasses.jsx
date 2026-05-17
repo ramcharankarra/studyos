@@ -7,6 +7,7 @@ import { Badge } from '../components/ui/Badge';
 import { Video, Calendar, Link as LinkIcon, MessageSquare, Megaphone, Loader2, Trash2, Clock, PlayCircle, StopCircle, Users as UsersIcon, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { db, auth } from '../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, orderBy, deleteDoc, writeBatch, updateDoc } from 'firebase/firestore';
 
 // Sidebar links
@@ -55,20 +56,32 @@ export function TeacherLiveClasses() {
   const [localUser, setLocalUser] = useState(null);
 
   useEffect(() => {
-    import('firebase/auth').then(({ onAuthStateChanged }) => {
-      const unsub = onAuthStateChanged(auth, (user) => {
-        setLocalUser(user);
-        setLoadingAuth(false);
-      });
-      return () => unsub();
+    const timeout = setTimeout(() => {
+      setLoadingAuth(false);
+    }, 3000);
+
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setLocalUser(user || null);
+      setLoadingAuth(false);
+      clearTimeout(timeout);
     });
+
+    return () => {
+      unsub();
+      clearTimeout(timeout);
+    };
   }, []);
 
   useEffect(() => {
-    if (loadingAuth === false && localUser?.uid) {
-      loadData(localUser.uid);
+    if (loadingAuth) return;
+
+    if (!localUser?.uid) {
+      navigate('/login');
+      return;
     }
-  }, [loadingAuth, localUser]);
+
+    loadData(localUser.uid);
+  }, [loadingAuth, localUser, navigate]);
 
   const loadData = async (uid) => {
     try {
