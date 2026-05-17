@@ -11,7 +11,7 @@ import {
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { collection, query, where, getDocs, onSnapshot, orderBy, collectionGroup } from 'firebase/firestore';
 
 const teacherLinks = [
@@ -35,30 +35,42 @@ export function TeacherDashboard() {
   const [insight, setInsight] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [localUser, setLocalUser] = useState(null);
+
   useEffect(() => {
-    if (!currentUser) return;
-    
-    const qNotif = query(
-      collection(db, 'notifications'),
-      where('userId', '==', currentUser.uid),
-      orderBy('createdAt', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(qNotif, (snapshot) => {
-      const notifs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      setActivities(notifs.slice(0, 5));
+    import('firebase/auth').then(({ onAuthStateChanged }) => {
+      const unsub = onAuthStateChanged(auth, (user) => {
+        setLocalUser(user);
+        setLoadingAuth(false);
+      });
+      return () => unsub();
     });
+  }, []);
 
-    loadDashboardData();
+  useEffect(() => {
+    if (loadingAuth === false && localUser?.uid) {
+      const qNotif = query(
+        collection(db, 'notifications'),
+        where('userId', '==', localUser.uid)
+      );
 
-    return () => unsubscribe();
-  }, [currentUser]);
+      const unsubscribe = onSnapshot(qNotif, (snapshot) => {
+        const notifs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        notifs.sort((a,b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+        setActivities(notifs.slice(0, 5));
+      });
 
-  const loadDashboardData = async () => {
-    if (!currentUser) return;
+      loadDashboardData(localUser.uid);
+
+      return () => unsubscribe();
+    }
+  }, [loadingAuth, localUser]);
+
+  const loadDashboardData = async (uid) => {
     try {
       // 1. Fetch Teacher's Subjects
-      const subjectsSnap = await getDocs(query(collection(db, 'subjects'), where('teacherId', '==', currentUser.uid)));
+      const subjectsSnap = await getDocs(query(collection(db, 'subjects'), where('teacherId', '==', uid)));
       const subjects = subjectsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       const subjectIds = subjects.map(s => s.id);
       const subjectMap = subjects.reduce((acc, sub) => { acc[sub.id] = sub.subjectName; return acc; }, {});
@@ -73,8 +85,8 @@ export function TeacherDashboard() {
       const [enrollSnap, attemptsSnap, assignSnap, liveSnap] = await Promise.all([
         getDocs(collection(db, 'enrollments')),
         getDocs(collection(db, 'quizResults')),
-        getDocs(query(collection(db, 'assignments'), where('teacherId', '==', currentUser.uid))),
-        getDocs(query(collection(db, 'liveClasses'), where('teacherId', '==', currentUser.uid)))
+        getDocs(query(collection(db, 'assignments'), where('teacherId', '==', uid))),
+        getDocs(query(collection(db, 'liveClasses'), where('teacherId', '==', uid)))
       ]);
 
       // Process Enrollments

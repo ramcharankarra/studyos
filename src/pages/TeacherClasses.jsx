@@ -43,22 +43,51 @@ export function TeacherClasses() {
   const [subjectAttempts, setSubjectAttempts] = useState([]);
   const [enrolledStudents, setEnrolledStudents] = useState([]);
   
-  useEffect(() => {
-    loadSubjects();
-  }, [currentUser]);
+  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [localUser, setLocalUser] = useState(null);
 
-  const loadSubjects = async () => {
-    if (!currentUser) return;
+  useEffect(() => {
+    import('firebase/auth').then(({ onAuthStateChanged }) => {
+      const unsub = onAuthStateChanged(auth, (user) => {
+        setLocalUser(user);
+        setLoadingAuth(false);
+      });
+      return () => unsub();
+    });
+  }, []);
+
+  useEffect(() => {
+    if (loadingAuth === false && localUser?.uid) {
+      loadSubjects(localUser.uid);
+    }
+  }, [loadingAuth, localUser]);
+
+  const loadSubjects = async (uid) => {
     try {
+      console.log("Current User:", localUser);
+      console.log("UID:", uid);
+      console.log("Fetching teacher subjects...");
+
       const q = query(
         collection(db, 'subjects'),
-        where('teacherId', '==', currentUser.uid),
-        orderBy('createdAt', 'desc')
+        where('teacherId', '==', uid)
       );
       const snap = await getDocs(q);
-      setSubjects(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    } catch (err) {
-      console.error("Failed to load subjects:", err);
+      
+      console.log("Fetched subjects count:", snap.size);
+      
+      const fetchedSubjects = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log("Fetched subjects:", fetchedSubjects);
+
+      fetchedSubjects.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return timeB - timeA;
+      });
+      setSubjects(fetchedSubjects);
+    } catch (error) {
+      console.error("Failed to load subjects:", error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }

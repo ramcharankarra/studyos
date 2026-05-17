@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { Video, Calendar, Link as LinkIcon, MessageSquare, Megaphone, Loader2, Trash2, Clock, PlayCircle, StopCircle, Users as UsersIcon, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, orderBy, deleteDoc, writeBatch, updateDoc } from 'firebase/firestore';
 
 // Sidebar links
@@ -51,24 +51,48 @@ export function TeacherLiveClasses() {
   const [sessionAttendance, setSessionAttendance] = useState([]);
   const [isLoadingAttendance, setIsLoadingAttendance] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [currentUser]);
+  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [localUser, setLocalUser] = useState(null);
 
-  const loadData = async () => {
-    if (!currentUser) return;
+  useEffect(() => {
+    import('firebase/auth').then(({ onAuthStateChanged }) => {
+      const unsub = onAuthStateChanged(auth, (user) => {
+        setLocalUser(user);
+        setLoadingAuth(false);
+      });
+      return () => unsub();
+    });
+  }, []);
+
+  useEffect(() => {
+    if (loadingAuth === false && localUser?.uid) {
+      loadData(localUser.uid);
+    }
+  }, [loadingAuth, localUser]);
+
+  const loadData = async (uid) => {
     try {
-      const qSub = query(collection(db, 'subjects'), where('teacherId', '==', currentUser.uid));
+      console.log("currentUser.uid:", uid);
+      const qSub = query(collection(db, 'subjects'), where('teacherId', '==', uid));
       const subSnap = await getDocs(qSub);
       setSubjects(subSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
-      const qLive = query(collection(db, 'liveClasses'), where('teacherId', '==', currentUser.uid), orderBy('scheduledTimestamp', 'desc'));
+      const qLive = query(collection(db, 'liveClasses'), where('teacherId', '==', uid));
       const liveSnap = await getDocs(qLive);
-      setLiveClasses(liveSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      console.log("fetched live classes count:", liveSnap.docs.length);
+      const loadedLive = liveSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      loadedLive.sort((a, b) => (b.scheduledTimestamp || 0) - (a.scheduledTimestamp || 0));
+      setLiveClasses(loadedLive);
 
-      const qAnnounce = query(collection(db, 'announcements'), where('teacherId', '==', currentUser.uid), orderBy('createdAt', 'desc'));
+      const qAnnounce = query(collection(db, 'announcements'), where('teacherId', '==', uid));
       const announceSnap = await getDocs(qAnnounce);
-      setAnnouncements(announceSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const loadedAnn = announceSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      loadedAnn.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return timeB - timeA;
+      });
+      setAnnouncements(loadedAnn);
 
     } catch (err) {
       console.error("Failed to load live class data:", err);
