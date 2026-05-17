@@ -5,7 +5,10 @@ import {
   signOut, 
   onAuthStateChanged,
   signInWithPopup,
-  updateProfile
+  updateProfile,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../lib/firebase';
@@ -44,7 +47,8 @@ export function AuthProvider({ children }) {
   }
 
   // Login with Email & Password
-  async function login(email, password) {
+  async function login(email, password, rememberMe = false) {
+    await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     await fetchUserRole(userCredential.user.uid);
     
@@ -59,7 +63,8 @@ export function AuthProvider({ children }) {
   }
 
   // Google Authentication
-  async function loginWithGoogle(role) {
+  async function loginWithGoogle(role, rememberMe = false) {
+    await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
 
@@ -126,15 +131,27 @@ export function AuthProvider({ children }) {
   const value = {
     currentUser,
     userRole,
+    loading,
     signup,
     login,
     loginWithGoogle,
     logout
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-[#14b8a6] border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-slate-500 font-bold">Verifying Session...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }

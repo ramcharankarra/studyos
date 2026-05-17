@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BrainCircuit, Mail, Lock, ArrowRight, Code } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -13,15 +13,23 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, currentUser, userRole } = useAuth();
+
+  useEffect(() => {
+    if (currentUser) {
+      if (userRole === 'student') navigate('/dashboard/student');
+      else if (userRole === 'teacher') navigate('/dashboard/teacher');
+    }
+  }, [currentUser, userRole, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       setError('');
       setLoading(true);
-      await login(email, password);
+      await login(email, password, rememberMe);
       
       // The ProtectedRoute or App logic will handle redirection based on role,
       // but we can manually route here as well for immediate feedback.
@@ -39,7 +47,7 @@ export function Login() {
     try {
       setError('');
       setLoading(true);
-      await loginWithGoogle(role);
+      await loginWithGoogle(role, rememberMe);
       
       if (role === 'student') navigate('/dashboard/student');
       else navigate('/dashboard/teacher');
@@ -128,6 +136,20 @@ export function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className="flex items-center pl-1">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 text-[#14b8a6] focus:ring-[#14b8a6] border-slate-300 rounded"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm font-extrabold text-slate-700">
+                Remember me
+              </label>
             </div>
 
             <Button disabled={loading} variant={role === 'student' ? 'primary' : 'purple'} className="w-full mt-8 py-4 text-lg" type="submit">

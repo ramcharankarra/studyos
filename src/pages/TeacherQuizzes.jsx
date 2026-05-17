@@ -3,10 +3,12 @@ import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { BrainCircuit, Sparkles, Plus, Loader2, Save, X, Target, FileText, CheckCircle2 } from 'lucide-react';
+import { BrainCircuit, Sparkles, Plus, Loader2, Save, X, Target, FileText, CheckCircle2, Copy } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { db } from '../lib/firebase';
-import { collection, doc, getDocs, setDoc, query, where, orderBy, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { collection, doc, getDocs, setDoc, query, where, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 import { generateQuiz } from '../lib/gemini';
 import { LayoutDashboard, Users, Video, BarChart, Settings } from 'lucide-react';
 
@@ -21,6 +23,7 @@ const teacherLinks = [
 ];
 
 export function TeacherQuizzes() {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [quizzes, setQuizzes] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -30,6 +33,7 @@ export function TeacherQuizzes() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
   const [topic, setTopic] = useState('');
+  const [quizTitle, setQuizTitle] = useState('');
   const [contextText, setContextText] = useState('');
   const [numQuestions, setNumQuestions] = useState(5);
   
@@ -43,24 +47,47 @@ export function TeacherQuizzes() {
   // Preview State
   const [previewQuiz, setPreviewQuiz] = useState(null);
 
-  useEffect(() => {
-    loadQuizzes();
-  }, [currentUser]);
+  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [localUser, setLocalUser] = useState(null);
 
-  const loadQuizzes = async () => {
-    if (!currentUser) return;
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setLoadingAuth(false);
+    }, 3000);
+
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setLocalUser(user || null);
+      setLoadingAuth(false);
+      clearTimeout(timeout);
+    });
+
+    return () => {
+      unsub();
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (loadingAuth) return;
+    if (localUser?.uid) {
+      loadQuizzes(localUser.uid);
+    }
+  }, [loadingAuth, localUser]);
+
+  const loadQuizzes = async (uid) => {
     try {
       const q = query(
         collection(db, 'quizzes'),
-        where('teacherId', '==', currentUser.uid),
-        orderBy('createdAt', 'desc')
+        where('teacherId', '==', uid)
       );
       const snapshot = await getDocs(q);
-      setQuizzes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const fetchedQuizzes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      fetchedQuizzes.sort((a,b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+      setQuizzes(fetchedQuizzes);
       
       const qSub = query(
         collection(db, 'subjects'),
-        where('teacherId', '==', currentUser.uid)
+        where('teacherId', '==', uid)
       );
       const subSnap = await getDocs(qSub);
       setSubjects(subSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -87,7 +114,7 @@ export function TeacherQuizzes() {
     try {
       const generatedQuestions = await generateQuiz(topic, contextText, numQuestions);
       setPreviewQuiz({
-        title: `${topic} Quiz`,
+        title: quizTitle.trim() || `${topic} Quiz`,
         questions: generatedQuestions
       });
     } catch (err) {
@@ -98,17 +125,21 @@ export function TeacherQuizzes() {
   };
 
   const handleSaveQuiz = async () => {
-    if (!previewQuiz || !currentUser) return;
+    if (!previewQuiz || !localUser) return;
     try {
       const quizId = crypto.randomUUID();
+      const selectedSubject = subjects.find(s => s.id === subjectId);
+      
       const newQuiz = {
         id: quizId,
         title: previewQuiz.title,
         description: description,
         difficulty: difficulty,
         dueDate: dueDate,
-        teacherId: currentUser.uid,
+        teacherId: localUser.uid,
+        teacherName: localUser.displayName || 'Teacher',
         subjectId: subjectId,
+        subjectName: selectedSubject ? selectedSubject.subjectName : '',
         status: 'draft',
         questions: previewQuiz.questions,
         createdAt: serverTimestamp(),
@@ -119,6 +150,7 @@ export function TeacherQuizzes() {
       setPreviewQuiz(null);
       setShowGenerator(false);
       setTopic('');
+      setQuizTitle('');
       setContextText('');
       setDescription('');
       setDueDate('');
@@ -145,6 +177,12 @@ export function TeacherQuizzes() {
       console.error("Failed to publish quiz:", err);
       alert("Failed to publish quiz.");
     }
+  };
+
+  const handleCopyLink = (quizId) => {
+    const url = `${window.location.origin}/quiz/${quizId}`;
+    navigator.clipboard.writeText(url);
+    alert("Quiz link copied to clipboard!");
   };
 
   return (
@@ -180,92 +218,111 @@ export function TeacherQuizzes() {
         {showGenerator && !previewQuiz && (
           <Card className="p-8 border-t-4 border-t-[#f59e0b] bg-white shadow-sm">
             <h2 className="text-xl font-black text-slate-800 mb-6">AI Quiz Configuration</h2>
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Assign to Subject</label>
-                <select 
-                  value={subjectId} 
-                  onChange={(e) => setSubjectId(e.target.value)}
-                  className="w-full p-3 rounded-xl border-2 border-slate-200 font-bold focus:border-[#f59e0b] focus:ring-[#f59e0b]/20"
-                >
-                  <option value="">-- Select a Subject --</option>
-                  {subjects.map(sub => (
-                    <option key={sub.id} value={sub.id}>{sub.subjectName}</option>
-                  ))}
-                </select>
+            {subjects.length === 0 ? (
+              <div className="text-center py-8">
+                <Target className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <p className="font-bold text-slate-500 mb-4">Create a subject first before generating quizzes.</p>
+                <Button onClick={() => navigate('/dashboard/teacher/classes')} variant="primary" className="bg-[#3b82f6] border-b-4 border-[#2563eb] hover:bg-[#2563eb]">
+                  Go to Manage Classes
+                </Button>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Quiz Topic</label>
-                <Input 
-                  value={topic} 
-                  onChange={(e) => setTopic(e.target.value)} 
-                  placeholder="e.g. Photosynthesis, World War 2, Python Basics" 
-                  className="font-bold border-2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Number of Questions</label>
-                <select 
-                  value={numQuestions} 
-                  onChange={(e) => setNumQuestions(Number(e.target.value))}
-                  className="w-full p-3 rounded-xl border-2 border-slate-200 font-bold focus:border-[#f59e0b] focus:ring-[#f59e0b]/20"
-                >
-                  <option value={3}>3 Questions (Quick Test)</option>
-                  <option value={5}>5 Questions (Standard)</option>
-                  <option value={10}>10 Questions (Full Assessment)</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Quiz Description</label>
-                <textarea 
-                  value={description} 
-                  onChange={(e) => setDescription(e.target.value)} 
-                  placeholder="e.g. This quiz covers chapters 1-3. Please take your time." 
-                  className="w-full h-20 p-4 rounded-xl border-2 border-slate-200 font-medium focus:border-[#f59e0b] focus:ring-[#f59e0b]/20 custom-scrollbar resize-none"
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            ) : (
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Difficulty</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Assign to Subject</label>
                   <select 
-                    value={difficulty} 
-                    onChange={(e) => setDifficulty(e.target.value)}
+                    value={subjectId} 
+                    onChange={(e) => setSubjectId(e.target.value)}
                     className="w-full p-3 rounded-xl border-2 border-slate-200 font-bold focus:border-[#f59e0b] focus:ring-[#f59e0b]/20"
                   >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Advanced">Advanced</option>
+                    <option value="">-- Select a Subject --</option>
+                    {subjects.map(sub => (
+                      <option key={sub.id} value={sub.id}>{sub.subjectName} {sub.classCode ? `(${sub.classCode})` : ''}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Due Date (Optional)</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Quiz Title (Optional)</label>
                   <Input 
-                    type="date"
-                    value={dueDate} 
-                    onChange={(e) => setDueDate(e.target.value)} 
+                    value={quizTitle} 
+                    onChange={(e) => setQuizTitle(e.target.value)} 
+                    placeholder="e.g. Midterm Physics Exam" 
+                    className="font-bold border-2 mb-6"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Quiz Topic</label>
+                  <Input 
+                    value={topic} 
+                    onChange={(e) => setTopic(e.target.value)} 
+                    placeholder="e.g. Photosynthesis, World War 2, Python Basics" 
                     className="font-bold border-2"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Number of Questions</label>
+                  <select 
+                    value={numQuestions} 
+                    onChange={(e) => setNumQuestions(Number(e.target.value))}
+                    className="w-full p-3 rounded-xl border-2 border-slate-200 font-bold focus:border-[#f59e0b] focus:ring-[#f59e0b]/20"
+                  >
+                    <option value={3}>3 Questions (Quick Test)</option>
+                    <option value={5}>5 Questions (Standard)</option>
+                    <option value={10}>10 Questions (Full Assessment)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Quiz Description</label>
+                  <textarea 
+                    value={description} 
+                    onChange={(e) => setDescription(e.target.value)} 
+                    placeholder="e.g. This quiz covers chapters 1-3. Please take your time." 
+                    className="w-full h-20 p-4 rounded-xl border-2 border-slate-200 font-medium focus:border-[#f59e0b] focus:ring-[#f59e0b]/20 custom-scrollbar resize-none"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Difficulty</label>
+                    <select 
+                      value={difficulty} 
+                      onChange={(e) => setDifficulty(e.target.value)}
+                      className="w-full p-3 rounded-xl border-2 border-slate-200 font-bold focus:border-[#f59e0b] focus:ring-[#f59e0b]/20"
+                    >
+                      <option value="Beginner">Beginner</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Advanced">Advanced</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Due Date (Optional)</label>
+                    <Input 
+                      type="date"
+                      value={dueDate} 
+                      onChange={(e) => setDueDate(e.target.value)} 
+                      className="font-bold border-2"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Context Material (Optional)</label>
+                  <textarea 
+                    value={contextText} 
+                    onChange={(e) => setContextText(e.target.value)} 
+                    placeholder="Paste your lecture notes here and the AI will only generate questions based on this text..." 
+                    className="w-full h-32 p-4 rounded-xl border-2 border-slate-200 font-medium focus:border-[#f59e0b] focus:ring-[#f59e0b]/20 custom-scrollbar resize-none"
+                  />
+                </div>
+                <Button 
+                  onClick={handleGenerate} 
+                  disabled={isGenerating || !subjectId}
+                  variant="primary" 
+                  className={`w-full py-4 shadow-sm text-lg ${!subjectId ? 'bg-slate-300 border-b-4 border-slate-400 text-slate-500 hover:bg-slate-300' : 'bg-[#f59e0b] border-b-4 border-[#c2410c] hover:bg-[#ea580c]'}`}
+                >
+                  {isGenerating ? <Loader2 className="w-6 h-6 animate-spin" /> : <Sparkles className="w-6 h-6 mr-2" />}
+                  {isGenerating ? "Generating..." : "Generate Magic Quiz"}
+                </Button>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Context Material (Optional)</label>
-                <textarea 
-                  value={contextText} 
-                  onChange={(e) => setContextText(e.target.value)} 
-                  placeholder="Paste your lecture notes here and the AI will only generate questions based on this text..." 
-                  className="w-full h-32 p-4 rounded-xl border-2 border-slate-200 font-medium focus:border-[#f59e0b] focus:ring-[#f59e0b]/20 custom-scrollbar resize-none"
-                />
-              </div>
-              <Button 
-                onClick={handleGenerate} 
-                disabled={isGenerating}
-                variant="primary" 
-                className="w-full py-4 bg-[#f59e0b] border-b-4 border-[#c2410c] hover:bg-[#ea580c] shadow-sm text-lg"
-              >
-                {isGenerating ? <Loader2 className="w-6 h-6 animate-spin" /> : <Sparkles className="w-6 h-6 mr-2" />}
-                {isGenerating ? "Generating..." : "Generate Magic Quiz"}
-              </Button>
-            </div>
+            )}
           </Card>
         )}
 
@@ -330,11 +387,14 @@ export function TeacherQuizzes() {
                           <X className="w-5 h-5" />
                         </button>
                       </div>
-                      {quiz.status === 'published' ? (
-                        <span className="inline-block px-2 py-1 bg-[#10b981]/10 text-[#10b981] text-xs font-black uppercase rounded-lg mb-4 border border-[#10b981]/20">Published</span>
-                      ) : (
-                        <span className="inline-block px-2 py-1 bg-slate-100 text-slate-500 text-xs font-black uppercase rounded-lg mb-4 border border-slate-200">Draft</span>
-                      )}
+                      <div className="flex gap-2 items-center mb-4">
+                        {quiz.status === 'published' ? (
+                          <span className="inline-block px-2 py-1 bg-[#10b981]/10 text-[#10b981] text-xs font-black uppercase rounded-lg border border-[#10b981]/20">Published</span>
+                        ) : (
+                          <span className="inline-block px-2 py-1 bg-slate-100 text-slate-500 text-xs font-black uppercase rounded-lg border border-slate-200">Draft</span>
+                        )}
+                        <span className="inline-block px-2 py-1 bg-blue-50 text-blue-600 text-xs font-black uppercase rounded-lg border border-blue-100">{quiz.subjectName || 'No Subject'}</span>
+                      </div>
                       
                       <p className="text-sm font-bold text-slate-500 mb-1 flex items-center">
                         <Target className="w-4 h-4 mr-1.5" />
@@ -348,12 +408,16 @@ export function TeacherQuizzes() {
                     </div>
                     
                     <div className="pt-4 border-t-2 border-slate-50 flex gap-2">
-                      {quiz.status !== 'published' && (
+                      {quiz.status !== 'published' ? (
                         <Button onClick={() => handlePublish(quiz.id)} variant="primary" className="flex-1 bg-[#10b981] border-b-4 border-[#059669] hover:bg-[#059669]">
                           Publish
                         </Button>
+                      ) : (
+                        <Button onClick={() => handleCopyLink(quiz.id)} variant="primary" className="flex-1 bg-blue-500 border-b-4 border-blue-700 hover:bg-blue-600">
+                          <Copy className="w-4 h-4 mr-2" /> Copy Link
+                        </Button>
                       )}
-                      <Button variant="outline" className={`font-bold border-2 ${quiz.status === 'published' ? 'w-full' : 'flex-1'}`}>
+                      <Button variant="outline" className={`font-bold border-2 ${quiz.status === 'published' ? 'flex-1' : 'flex-1'}`}>
                         View Results
                       </Button>
                     </div>

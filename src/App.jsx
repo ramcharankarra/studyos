@@ -23,6 +23,7 @@ import { TeacherStudentProfile } from './pages/TeacherStudentProfile';
 import { TeacherSettings } from './pages/TeacherSettings';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { TakeQuiz } from './pages/TakeQuiz';
 
 // Layout wrapper for marketing pages
 const MarketingLayout = ({ children }) => (
@@ -75,6 +76,14 @@ function App() {
             element={
               <ProtectedRoute allowedRole="student">
                 <StudentQuizzes />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/quiz/:quizId" 
+            element={
+              <ProtectedRoute allowedRole="student">
+                <TakeQuiz />
               </ProtectedRoute>
             } 
           />
