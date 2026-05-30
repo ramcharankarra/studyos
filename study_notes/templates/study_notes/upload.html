@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow border-0 rounded-4 mt-4">
+            <div class="card-header bg-white pt-4 pb-3 border-bottom text-center">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="bi bi-cloud-arrow-up fs-3"></i>
+                </div>
+                <h4 class="mb-0 fw-bold">Upload Document</h4>
+                <p class="text-muted small mb-0">PDF, DOCX, PPTX, or TXT.</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control bg-light border-0" placeholder="e.g., Chapter 4: Neural Networks" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Document File <span class="text-danger">*</span></label>
+                        <input type="file" name="document" class="form-control bg-light border-0" accept=".pdf,.docx,.pptx,.txt" required>
+                        <div class="form-text">Max size: 10MB. For long documents, we analyze the first 40 pages to extract core concepts.</div>
+                    </div>
+
+                    <div class="alert alert-info border-0 rounded-3 small">
+                        <i class="bi bi-robot me-2"></i> After uploading, our AI Engine will read the document and automatically generate Summaries, Important Questions, and Flashcards in the background.
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary rounded-pill fw-bold py-2" onclick="this.innerHTML='<span class=\'spinner-border spinner-border-sm me-2\'></span>Uploading...';">Upload & Analyze</button>
+                        <a href="{% url 'study_notes:dashboard' %}" class="btn btn-light text-muted rounded-pill fw-bold py-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-gradient fw-bold">Live Classes</h2>
+        <p class="text-muted mb-0">Join upcoming virtual meetings for your classes.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Upcoming Classes -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white pt-4 pb-3 border-bottom">
+                <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-calendar-event me-2"></i>Upcoming Live Classes</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if upcoming_classes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Date & Time</th>
+                                    <th>Classroom</th>
+                                    <th>Teacher</th>
+                                    <th class="text-end pe-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lc in upcoming_classes %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">
+                                        {{ lc.title }}
+                                        {% if lc.description %}
+                                        <br><small class="text-muted fw-normal">{{ lc.description|truncatechars:50 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary mb-1"><i class="bi bi-calendar3 me-1"></i>{{ lc.date|date:"M d, Y" }}</span><br>
+                                        <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ lc.start_time|time:"h:i A" }} - {{ lc.end_time|time:"h:i A" }}</small>
+                                    </td>
+                                    <td>{{ lc.classroom.name }}</td>
+                                    <td>{{ lc.teacher.full_name }}</td>
+                                    <td class="text-end pe-4">
+                                        <a href="{% url 'live_classes:join_live_class' lc.id %}" target="_blank" class="btn btn-primary rounded-pill fw-bold shadow-sm px-4">
+                                            <i class="bi bi-camera-video me-2"></i>Join Meeting
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="p-5 text-center text-muted">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-calendar2-x fs-1 text-secondary"></i>
+                        </div>
+                        <h5 class="fw-bold">No Upcoming Classes</h5>
+                        <p>Your teachers have not scheduled any upcoming live classes.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Past Classes -->
+    {% if past_classes %}
+    <div class="col-12 mt-5">
+        <h5 class="fw-bold text-muted mb-3"><i class="bi bi-clock-history me-2"></i>Past Classes</h5>
+        <div class="row g-3">
+            {% for lc in past_classes %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm border-0 rounded-4 h-100 bg-light opacity-75">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-1 text-truncate">{{ lc.title }}</h6>
+                            <p class="text-muted small mb-3">{{ lc.classroom.name }}</p>
+                            
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-calendar-check text-secondary me-2"></i>
+                                <span class="small">{{ lc.date|date:"M d, Y" }}</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-clock text-secondary me-2"></i>
+                                <span class="small">{{ lc.start_time|time:"h:i A" }} - {{ lc.end_time|time:"h:i A" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

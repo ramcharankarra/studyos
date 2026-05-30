@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1 text-gradient">Advanced Analytics</h2>
+        <p class="text-muted mb-0">Deep insights into student performance and engagement.</p>
+    </div>
+    {% if selected_class_id %}
+    <div>
+        <a href="{% url 'analytics:export_pdf' %}?classroom={{ selected_class_id }}" class="btn btn-outline-danger shadow-sm fw-bold me-2"><i class="bi bi-file-earmark-pdf me-2"></i> Export PDF</a>
+        <a href="{% url 'analytics:export_csv' %}?classroom={{ selected_class_id }}" class="btn btn-outline-success shadow-sm fw-bold"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Export CSV</a>
+    </div>
+    {% else %}
+    <div>
+        <a href="{% url 'analytics:export_pdf' %}" class="btn btn-outline-danger shadow-sm fw-bold me-2"><i class="bi bi-file-earmark-pdf me-2"></i> Export PDF</a>
+        <a href="{% url 'analytics:export_csv' %}" class="btn btn-outline-success shadow-sm fw-bold"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Export CSV</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-10">
+                <label class="form-label text-muted small fw-bold">Filter by Classroom</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-funnel text-primary"></i></span>
+                    <select name="classroom" class="form-select border-start-0" onchange="this.form.submit()">
+                        <option value="">All Classes Overview</option>
+                        {% for c in classrooms %}
+                            <option value="{{ c.id }}" {% if selected_class_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'analytics:teacher_analytics' %}" class="btn btn-outline-secondary w-100 fw-bold">Clear Filter</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4 text-center">
+                <h2 class="display-5 fw-bold text-primary mb-0">{{ data.total_students }}</h2>
+                <p class="text-muted text-uppercase small fw-bold mt-2 mb-0">Total Students</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4 text-center">
+                <h2 class="display-5 fw-bold text-success mb-0">{{ data.quiz_participation_rate }}%</h2>
+                <p class="text-muted text-uppercase small fw-bold mt-2 mb-0">Quiz Participation</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4 text-center">
+                <h2 class="display-5 fw-bold text-info mb-0">{{ data.assignment_submission_rate }}%</h2>
+                <p class="text-muted text-uppercase small fw-bold mt-2 mb-0">Assignment Submissions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4 text-center">
+                <div class="row">
+                    <div class="col-6 border-end">
+                        <h4 class="fw-bold text-dark mb-0">{{ data.avg_quiz_score }}%</h4>
+                        <small class="text-muted d-block">Avg Quiz</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="fw-bold text-dark mb-0">{{ data.avg_assignment_score }}%</h4>
+                        <small class="text-muted d-block">Avg Assgn</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row g-4 mb-5">
+    <div class="col-md-{% if not selected_class_id %}8{% else %}12{% endif %}">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white pt-4 pb-3 border-bottom-0">
+                <h5 class="fw-bold mb-0">Performance Trend Over Time (Quizzes)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="trendChart" height="{% if not selected_class_id %}100{% else %}80{% endif %}"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    {% if not selected_class_id %}
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white pt-4 pb-3 border-bottom-0">
+                <h5 class="fw-bold mb-0">Class Comparison</h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="classComparisonChart"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Advanced AI Analytics Section -->
+{% if selected_class_id %}
+<div class="card shadow-sm border-0 mt-5" style="border-top: 4px solid var(--primary-blue);">
+    <div class="card-header bg-white pt-4 pb-3 border-bottom d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="fw-bold mb-1"><i class="bi bi-robot text-warning me-2"></i> Deep AI Classroom Analytics</h4>
+            <p class="text-muted small mb-0">Powered by Gemini. Generates actionable insights based on recent performance data.</p>
+        </div>
+        <form method="POST" action="{% url 'analytics:generate_ai_analytics' selected_class_id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary fw-bold shadow-sm">Generate / Refresh AI Report</button>
+        </form>
+    </div>
+    
+    <div class="card-body p-4">
+        {% if data.ai_analytics %}
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="bg-light p-4 rounded-3 h-100">
+                        <h6 class="text-uppercase text-danger fw-bold mb-3"><i class="bi bi-exclamation-octagon me-2"></i> Frequently Missed Topics</h6>
+                        <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ data.ai_analytics.frequently_missed_topics }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="bg-light p-4 rounded-3 h-100">
+                        <h6 class="text-uppercase text-warning fw-bold mb-3"><i class="bi bi-person-exclamation me-2"></i> At-Risk Students</h6>
+                        <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ data.ai_analytics.at_risk_students }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="bg-light p-4 rounded-3 h-100">
+                        <h6 class="text-uppercase text-success fw-bold mb-3"><i class="bi bi-heart-pulse me-2"></i> Recommended Interventions</h6>
+                        <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ data.ai_analytics.interventions }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="bg-light p-4 rounded-3 h-100">
+                        <h6 class="text-uppercase text-primary fw-bold mb-3"><i class="bi bi-graph-up-arrow me-2"></i> Learning Trends</h6>
+                        <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ data.ai_analytics.learning_trends }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-end mt-3">
+                <small class="text-muted"><i class="bi bi-clock"></i> Report generated: {{ data.ai_analytics.generated_at|date:"M d, Y h:i A" }}</small>
+            </div>
+        {% else %}
+            <div class="text-center p-5">
+                <i class="bi bi-bar-chart-steps display-1 text-muted mb-3 d-block"></i>
+                <h4 class="fw-bold">No AI Report Generated Yet</h4>
+                <p class="text-muted">Click the button above to generate a comprehensive analysis of this class.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const primaryBlue = '#4facfe';
+    const primaryLight = 'rgba(79, 172, 254, 0.2)';
+    
+    // Trend Chart
+    const ctxTrend = document.getElementById('trendChart');
+    if (ctxTrend) {
+        const trendLabels = {{ data.trend_labels|safe }};
+        const trendScores = {{ data.trend_scores|safe }};
+        
+        if (trendLabels.length > 0) {
+            new Chart(ctxTrend.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'Average Class Score (%)',
+                        data: trendScores,
+                        borderColor: primaryBlue,
+                        backgroundColor: primaryLight,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: primaryBlue,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        } else {
+            ctxTrend.outerHTML = '<div class="text-center text-muted p-5">Not enough data to chart trends.</div>';
+        }
+    }
+    
+    // Class Comparison Chart
+    const ctxCompare = document.getElementById('classComparisonChart');
+    if (ctxCompare) {
+        const subLabels = {{ data.subject_labels|safe }};
+        const subScores = {{ data.subject_scores|safe }};
+        
+        if (subLabels.length > 0) {
+            new Chart(ctxCompare.getContext('2d'), {
+                type: 'polarArea',
+                data: {
+                    labels: subLabels,
+                    datasets: [{
+                        data: subScores,
+                        backgroundColor: [
+                            'rgba(79, 172, 254, 0.6)', 
+                            'rgba(161, 140, 209, 0.6)', 
+                            'rgba(32, 201, 151, 0.6)', 
+                            'rgba(246, 211, 101, 0.6)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        r: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+        } else {
+            ctxCompare.outerHTML = '<div class="text-center text-muted p-5">Not enough data to compare classes.</div>';
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow border-0 rounded-4 mt-4">
+            <div class="card-header bg-white pt-4 pb-3 border-bottom text-center">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="bi bi-calendar-plus fs-3"></i>
+                </div>
+                <h4 class="mb-0 fw-bold">Schedule Live Class</h4>
+                <p class="text-muted small mb-0">Create a virtual meeting for your students.</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Classroom <span class="text-danger">*</span></label>
+                        <select name="classroom" class="form-select bg-light border-0" required>
+                            <option value="">Select a class...</option>
+                            {% for c in classrooms %}
+                                <option value="{{ c.id }}">{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control bg-light border-0" placeholder="e.g., Intro to Machine Learning" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description (Optional)</label>
+                        <textarea name="description" class="form-control bg-light border-0" rows="3" placeholder="Briefly describe what will be covered..."></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Date <span class="text-danger">*</span></label>
+                            <input type="date" name="date" class="form-control bg-light border-0" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Start Time <span class="text-danger">*</span></label>
+                            <input type="time" name="start_time" class="form-control bg-light border-0" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">End Time <span class="text-danger">*</span></label>
+                            <input type="time" name="end_time" class="form-control bg-light border-0" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Meeting Link (Zoom, Meet, Teams) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-link-45deg"></i></span>
+                            <input type="url" name="meeting_link" class="form-control bg-light border-0" placeholder="https://zoom.us/j/123456789" required>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info border-0 rounded-3 small">
+                        <i class="bi bi-info-circle-fill me-2"></i> An attendance session will automatically be created. When students click "Join", they will be marked as Present.
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary rounded-pill fw-bold py-2">Schedule Class</button>
+                        <a href="{% url 'live_classes:teacher_dashboard' %}" class="btn btn-light text-muted rounded-pill fw-bold py-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

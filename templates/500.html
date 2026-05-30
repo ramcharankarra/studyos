@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 70vh;">
+    <h1 class="display-1 fw-bold text-danger mb-3">500</h1>
+    <h3 class="fw-bold mb-4">Internal Server Error</h3>
+    <p class="text-muted max-w-md mx-auto mb-5">Oops! Something went wrong on our end. We are working to fix it. Please try again later.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm">Return Home</a>
+</div>
+{% endblock %}

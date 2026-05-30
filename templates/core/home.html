@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row align-items-center py-5 mb-5 border-bottom">
+    <div class="col-lg-6 mb-5 mb-lg-0 pe-lg-5">
+        <div class="d-inline-block bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-4 border border-primary border-opacity-25">
+            <i class="bi bi-rocket-takeoff me-2"></i>StudyOS 2.0 is Live
+        </div>
+        <h1 class="display-3 fw-extrabold text-dark mb-4 lh-sm text-gradient">
+            The Future of <br>
+            Intelligent Learning
+        </h1>
+        <p class="lead text-muted mb-5">
+            StudyOS is a next-generation Learning Management System that combines powerful classroom tools with cutting-edge AI technology to personalize education at scale.
+        </p>
+        <div class="d-flex gap-3">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-sm custom-hover">Get Started Free</a>
+            <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg px-5 py-3 fw-bold custom-hover">Sign In</a>
+        </div>
+    </div>
+    <div class="col-lg-6 position-relative text-center">
+        <!-- Abstract Decoration -->
+        <div class="position-absolute top-50 start-50 translate-middle bg-primary rounded-circle blur-bg" style="width: 400px; height: 400px; opacity: 0.1; filter: blur(50px); z-index: -1;"></div>
+        <!-- Mockup Placeholder -->
+        <div class="card border-0 shadow-lg overflow-hidden rounded-4">
+            <div class="bg-dark p-2 d-flex gap-2">
+                <div class="rounded-circle bg-danger" style="width: 12px; height: 12px;"></div>
+                <div class="rounded-circle bg-warning" style="width: 12px; height: 12px;"></div>
+                <div class="rounded-circle bg-success" style="width: 12px; height: 12px;"></div>
+            </div>
+            <!-- If real screenshots are provided, replace this div with an img tag -->
+            <div class="bg-light p-5 text-center d-flex align-items-center justify-content-center" style="height: 350px;">
+                <h4 class="text-muted"><i class="bi bi-image d-block fs-1 mb-2"></i>[Dashboard Screenshot Placeholder]</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="py-5 text-center">
+    <h2 class="fw-bold mb-3">Core Capabilities</h2>
+    <p class="text-muted max-w-md mx-auto mb-5">Everything you need to manage a modern classroom, enhanced by AI.</p>
+    
+    <div class="row g-4 text-start">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light rounded-4 p-4">
+                <i class="bi bi-robot fs-1 text-primary mb-3"></i>
+                <h4 class="fw-bold mb-3">AI Tutor (Gemini)</h4>
+                <p class="text-muted">A dedicated AI assistant that answers student questions, explains complex concepts, and tracks weak areas.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light rounded-4 p-4">
+                <i class="bi bi-ui-checks-grid fs-1 text-warning mb-3"></i>
+                <h4 class="fw-bold mb-3">Generative Quizzes</h4>
+                <p class="text-muted">Teachers can automatically generate multiple-choice quizzes on any topic using the Gemini API.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light rounded-4 p-4">
+                <i class="bi bi-bar-chart-line fs-1 text-success mb-3"></i>
+                <h4 class="fw-bold mb-3">Advanced Analytics</h4>
+                <p class="text-muted">Interactive Chart.js dashboards providing real-time insights into student performance and class trends.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light rounded-4 p-4">
+                <i class="bi bi-building fs-1 text-danger mb-3"></i>
+                <h4 class="fw-bold mb-3">Classroom Management</h4>
+                <p class="text-muted">Create subjects, generate unique join codes, and manage student enrollments effortlessly.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light rounded-4 p-4">
+                <i class="bi bi-file-earmark-arrow-up fs-1 text-info mb-3"></i>
+                <h4 class="fw-bold mb-3">Assignment Workflows</h4>
+                <p class="text-muted">Secure file uploads, deadline tracking, and an intuitive grading interface for teachers.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-light rounded-4 p-4">
+                <i class="bi bi-bell fs-1 text-secondary mb-3"></i>
+                <h4 class="fw-bold mb-3">Real-time Notifications</h4>
+                <p class="text-muted">Automated alerts via Django Signals for new quizzes, graded assignments, and attendance sessions.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Benefits Section -->
+<div class="row align-items-center py-5 my-5 bg-light rounded-4 p-4 p-md-5">
+    <div class="col-lg-6 mb-4 mb-lg-0">
+        <h2 class="fw-bold mb-4">Empowering Teachers</h2>
+        <ul class="list-unstyled">
+            <li class="d-flex mb-3"><i class="bi bi-check-circle-fill text-success fs-5 me-3"></i><span><strong>Save Time:</strong> Generate quizzes instantly with AI.</span></li>
+            <li class="d-flex mb-3"><i class="bi bi-check-circle-fill text-success fs-5 me-3"></i><span><strong>Actionable Data:</strong> Identify at-risk students through aggregated analytics.</span></li>
+            <li class="d-flex mb-3"><i class="bi bi-check-circle-fill text-success fs-5 me-3"></i><span><strong>Streamlined Grading:</strong> Centralized dashboard for reviewing and grading assignments.</span></li>
+        </ul>
+    </div>
+    <div class="col-lg-6 border-start border-2 ps-lg-5">
+        <h2 class="fw-bold mb-4">Inspiring Students</h2>
+        <ul class="list-unstyled">
+            <li class="d-flex mb-3"><i class="bi bi-check-circle-fill text-primary fs-5 me-3"></i><span><strong>24/7 Assistance:</strong> The AI Tutor is always available for academic help.</span></li>
+            <li class="d-flex mb-3"><i class="bi bi-check-circle-fill text-primary fs-5 me-3"></i><span><strong>Personalized Insights:</strong> Visual learning paths and weak-topic analysis.</span></li>
+            <li class="d-flex mb-3"><i class="bi bi-check-circle-fill text-primary fs-5 me-3"></i><span><strong>Instant Feedback:</strong> Immediate quiz results and automated notifications.</span></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Technology Stack -->
+<div class="py-5 text-center mb-5">
+    <h2 class="fw-bold mb-5">Technology Stack</h2>
+    <div class="d-flex flex-wrap justify-content-center gap-4">
+        <div class="px-4 py-3 bg-white border rounded shadow-sm"><h5 class="mb-0 fw-bold">Python</h5></div>
+        <div class="px-4 py-3 bg-white border rounded shadow-sm"><h5 class="mb-0 fw-bold">Django 5</h5></div>
+        <div class="px-4 py-3 bg-white border rounded shadow-sm"><h5 class="mb-0 fw-bold">PostgreSQL</h5></div>
+        <div class="px-4 py-3 bg-white border rounded shadow-sm"><h5 class="mb-0 fw-bold">Google Gemini API</h5></div>
+        <div class="px-4 py-3 bg-white border rounded shadow-sm"><h5 class="mb-0 fw-bold">Bootstrap 5</h5></div>
+        <div class="px-4 py-3 bg-white border rounded shadow-sm"><h5 class="mb-0 fw-bold">Chart.js</h5></div>
+        <div class="px-4 py-3 bg-white border rounded shadow-sm"><h5 class="mb-0 fw-bold">Render CI/CD</h5></div>
+    </div>
+</div>
+
+<!-- Contact Section -->
+<div class="py-5 bg-dark text-white rounded-4 text-center px-4">
+    <h2 class="fw-bold mb-3">Ready to transform your educational workflow?</h2>
+    <p class="text-white-50 mb-4 max-w-md mx-auto">Deploy StudyOS for your institution today.</p>
+    <a href="mailto:contact@studyos.demo" class="btn btn-primary btn-lg px-5">Contact Us</a>
+</div>
+{% endblock %}

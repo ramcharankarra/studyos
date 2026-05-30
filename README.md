@@ -1,62 +1,70 @@
-# StudyOS 🎓
+# StudyOS
 
-StudyOS is a full-stack, AI-powered educational platform designed to transform traditional classroom workflows into intelligent, personalized learning ecosystems. Built with modern web technologies, it provides distinct, feature-rich dashboards for Students, Teachers, and Administrators.
+**The Future of Intelligent Learning.**
 
-## Features ✨
+StudyOS is a robust, AI-powered learning management system designed to streamline the educational experience for both teachers and students. Built with Django, it features intelligent tutoring, generative smart quizzes, advanced analytics, and a modern, responsive UI.
 
-### 👨‍🎓 For Students
-- **Smart Quizzes:** Upload lecture notes and let the Gemini AI automatically generate multiple-choice quizzes and flashcards.
-- **Academic Portfolio:** A dynamic profile page featuring Recharts visualizations of subject mastery and activity streaks.
-- **Personalized Learning Path:** An AI-driven engine that analyzes weak topics and generates targeted study recommendations.
-- **Assignment Hub:** Submit essays and links, and get instant "AI Teaching Assistant" feedback on your draft before submitting it to the real teacher.
+## 🚀 Features
 
-### 👩‍🏫 For Teachers
-- **Classroom Management:** Create subjects, generate unique invite codes, and monitor top-performing students via leaderboards.
-- **Assignment Center:** Publish coursework, attach resources, and track real-time submission metrics.
-- **Live Classes:** Schedule and manage Google Meet/Zoom links directly within the platform.
-- **Student Inspection:** Click on any student to view their exact AI-generated academic profile to guide 1-on-1 interventions.
+- **Role-Based Access**: Dedicated workflows for Students and Teachers.
+- **Classroom Management**: Create subjects, share codes, and enroll students seamlessly.
+- **Smart Quizzes**: 
+  - Teachers can generate entire quizzes via the Google Gemini API.
+  - Automated grading and instant feedback.
+  - Timed attempts and score percentage tracking.
+- **Assignments**: Upload files, submit work, and manage grading effortlessly.
+- **AI Academic Tutor**: Integrated Gemini-powered chat interface to help students with academic concepts.
+- **Advanced Analytics**: Interactive dashboards using Chart.js to track class and individual performance trends.
+- **Notifications & Attendance**: Real-time alerts and session-based attendance tracking (in development).
 
-## Tech Stack 🛠️
+## 🛠️ Technology Stack
 
-- **Frontend:** React 19, Vite, Tailwind CSS 4, Framer Motion, Recharts
-- **Backend/Database:** Firebase Authentication, Cloud Firestore
-- **AI Integration:** Google Gemini API (`gemini-2.5-pro`)
-- **Icons:** Lucide React
+- **Backend**: Django 5 / Python 3
+- **Database**: PostgreSQL (Production) / SQLite (Local)
+- **Frontend**: Bootstrap 5, Vanilla CSS, Chart.js
+- **AI Integration**: Google GenAI API (Gemini-2.5-Flash)
+- **Deployment**: Render, Gunicorn, WhiteNoise
 
-## Setup Instructions 🚀
+## 💻 Local Setup Instructions
 
-1. **Clone the repository:**
+1. **Clone the repository**
+2. **Create a virtual environment**:
    ```bash
-   git clone <repository-url>
-   cd StudyOS
+   python -m venv venv
+   source venv/bin/activate
    ```
-
-2. **Install Dependencies:**
+3. **Install dependencies**:
    ```bash
-   npm install
+   pip install -r requirements.txt
    ```
-
-3. **Environment Variables:**
-   Create a `.env.local` file in the root directory with your Firebase configuration and Gemini API Key:
+4. **Environment Variables**:
+   Create a `.env` file in the root directory:
    ```env
-   VITE_FIREBASE_API_KEY="your_api_key"
-   VITE_FIREBASE_AUTH_DOMAIN="your_auth_domain"
-   VITE_FIREBASE_PROJECT_ID="your_project_id"
-   VITE_FIREBASE_STORAGE_BUCKET="your_storage_bucket"
-   VITE_FIREBASE_MESSAGING_SENDER_ID="your_sender_id"
-   VITE_FIREBASE_APP_ID="your_app_id"
-   VITE_GEMINI_API_KEY="your_gemini_api_key"
+   SECRET_KEY=your-secret-key-here
+   DEBUG=True
+   DATABASE_URL=sqlite:///db.sqlite3
+   GEMINI_API_KEY=your-google-gemini-api-key
+   ALLOWED_HOSTS=*
    ```
-
-4. **Start Development Server:**
+5. **Run Migrations**:
    ```bash
-   npm run dev
+   python manage.py migrate
+   ```
+6. **Start Server**:
+   ```bash
+   python manage.py runserver
    ```
 
-## Deployment 🌐
-StudyOS is configured for instant deployment on Vercel or Firebase Hosting.
-- **Vercel:** A `vercel.json` file is included to handle React Router rewrites automatically.
-- **Firebase:** A `firebase.json` and secure `firestore.rules` file are included.
+## 🚀 Deployment (Render)
 
-## License
-MIT
+This project is configured for automated deployment on [Render](https://render.com).
+1. Connect your GitHub repository to Render.
+2. The `render.yaml` blueprint will automatically create a Web Service and a PostgreSQL database.
+3. Ensure you add the `GEMINI_API_KEY` manually in the Render dashboard environment variables.
+
+## 🧪 Testing
+
+Critical workflows are covered by Django's `TestCase`. Run the test suite using:
+```bash
+python manage.py test
+```

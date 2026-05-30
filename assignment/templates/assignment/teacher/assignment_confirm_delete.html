@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 mt-5">
+        <div class="card shadow-sm border-danger text-center p-4">
+            <div class="card-body">
+                <i class="bi bi-exclamation-triangle-fill text-danger display-1 mb-3"></i>
+                <h3 class="fw-bold">Delete Assignment?</h3>
+                <p class="text-muted">Are you sure you want to delete the assignment <strong>"{{ object.title }}"</strong>? This action cannot be undone and will permanently remove all associated student submissions and grades.</p>
+                
+                <form method="POST" class="mt-4">
+                    {% csrf_token %}
+                    <a href="{% url 'assignment:teacher_assignment_list' %}" class="btn btn-outline-secondary px-4 me-2">Cancel</a>
+                    <button type="submit" class="btn btn-danger px-4 shadow-sm">Yes, Delete Assignment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

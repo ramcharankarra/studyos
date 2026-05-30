@@ -1,0 +1,114 @@
+<nav class="navbar navbar-expand-lg navbar-custom mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}"><i class="bi bi-book-half"></i> StudyOS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                    </li>
+                    {% if user.is_teacher %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'classroom:class_list' %}"><i class="bi bi-person-video3 me-1"></i> Classes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'quiz:quiz_list' %}"><i class="bi bi-journal-check me-1"></i> Quizzes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'assignment:teacher_assignment_list' %}"><i class="bi bi-file-earmark-text me-1"></i> Assignments</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold" href="{% url 'study_notes:dashboard' %}"><i class="bi bi-file-earmark-richtext me-1"></i> Study Notes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold" href="{% url 'ai_learning:teacher_insights' %}"><i class="bi bi-magic me-1"></i> AI Insights</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold" href="{% url 'analytics:teacher_analytics' %}"><i class="bi bi-bar-chart-fill me-1"></i> Analytics</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold" href="{% url 'live_classes:teacher_dashboard' %}"><i class="bi bi-camera-video-fill me-1"></i> Live Classes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold" href="{% url 'communication:inbox' %}"><i class="bi bi-chat-dots-fill me-1"></i> Messages</a>
+                        </li>
+                    {% elif user.is_student %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'classroom:my_classes' %}"><i class="bi bi-person-video3 me-1"></i> My Classes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'quiz:student_quiz_list' %}"><i class="bi bi-journal-check me-1"></i> Quizzes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'assignment:student_assignment_list' %}"><i class="bi bi-file-earmark-text me-1"></i> Assignments</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle fw-bold" href="#" id="aiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-magic me-1"></i> AI Engine
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="aiDropdown">
+                                <li><a class="dropdown-item py-2" href="{% url 'ai_learning:tutor_chat_new' %}"><i class="bi bi-robot me-2"></i> AI Tutor</a></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'study_notes:dashboard' %}"><i class="bi bi-file-earmark-richtext me-2"></i> AI Study Notes</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'ai_learning:student_learning_dashboard' %}"><i class="bi bi-graph-up-arrow me-2"></i> Learning Insights</a></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'analytics:student_analytics' %}"><i class="bi bi-bar-chart-fill me-2"></i> Advanced Analytics</a></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'career_assistant:dashboard' %}"><i class="bi bi-briefcase-fill me-2"></i> Career Assistant</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold" href="{% url 'live_classes:student_dashboard' %}"><i class="bi bi-camera-video-fill me-1"></i> Live Classes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold" href="{% url 'communication:inbox' %}"><i class="bi bi-chat-dots-fill me-1"></i> Messages</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item dropdown me-2">
+                        <a class="nav-link dropdown-toggle" href="#" id="themeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-palette"></i> Theme
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="themeDropdown">
+                            <li><a class="dropdown-item py-2 d-flex align-items-center" href="#" onclick="changeTheme('default')"><span class="bg-primary rounded-circle me-2" style="width: 12px; height: 12px; display: inline-block;"></span> Blue Academic (Default)</a></li>
+                            <li><a class="dropdown-item py-2 d-flex align-items-center" href="#" onclick="changeTheme('purple')"><span class="rounded-circle me-2" style="width: 12px; height: 12px; display: inline-block; background-color: #9333ea;"></span> Purple Learning</a></li>
+                            <li><a class="dropdown-item py-2 d-flex align-items-center" href="#" onclick="changeTheme('green')"><span class="rounded-circle me-2" style="width: 12px; height: 12px; display: inline-block; background-color: #059669;"></span> Green Success</a></li>
+                            <li><a class="dropdown-item py-2 d-flex align-items-center" href="#" onclick="changeTheme('orange')"><span class="rounded-circle me-2" style="width: 12px; height: 12px; display: inline-block; background-color: #ea580c;"></span> Orange Energy</a></li>
+                            <li><a class="dropdown-item py-2 d-flex align-items-center" href="#" onclick="changeTheme('minimal')"><span class="rounded-circle me-2" style="width: 12px; height: 12px; display: inline-block; background-color: #334155;"></span> Minimal Professional</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item py-2" href="{% url 'profile' user.username %}"><i class="bi bi-person me-2"></i> My Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form action="{% url 'logout' %}" method="post" class="d-inline w-100">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item py-2 text-danger"><i class="bi bi-box-arrow-right me-2"></i> Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<script>
+function changeTheme(themeName) {
+    if (themeName === 'default') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('studyos_theme', 'default');
+    } else {
+        document.documentElement.setAttribute('data-theme', themeName);
+        localStorage.setItem('studyos_theme', themeName);
+    }
+}
+</script>

@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-gradient">{{ classroom.name }} Feed</h2>
+        <p class="text-muted mb-0">Announcements and Discussions</p>
+    </div>
+    <a href="{% url 'classroom:classroom_detail' classroom.id %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to Class</a>
+</div>
+
+<div class="row g-4">
+    <!-- Main Feed -->
+    <div class="col-md-8">
+        
+        <!-- Teacher: Create Announcement -->
+        {% if request.user.is_teacher %}
+        <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-megaphone-fill me-2"></i> Post Announcement</h5>
+            </div>
+            <div class="card-body p-4 bg-light">
+                <form method="POST" action="{% url 'communication:create_announcement' classroom.id %}">
+                    {% csrf_token %}
+                    <input type="text" name="title" class="form-control mb-3 border-0 shadow-sm" placeholder="Announcement Title" required>
+                    <textarea name="content" class="form-control mb-3 border-0 shadow-sm" rows="3" placeholder="What do you want to announce to the class?" required></textarea>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_pinned" id="isPinned">
+                            <label class="form-check-label text-muted" for="isPinned"><i class="bi bi-pin-angle-fill me-1"></i>Pin to top</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold rounded-pill">Post Announcement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Create Discussion Post -->
+        <div class="card shadow-sm border-0 mb-4 rounded-4">
+            <div class="card-body p-4 d-flex align-items-center">
+                <div class="bg-light text-dark rounded-circle d-flex align-items-center justify-content-center me-3 border shadow-sm" style="width: 45px; height: 45px;">
+                    <span class="fw-bold">{{ request.user.full_name|make_list|first|upper }}</span>
+                </div>
+                <button class="btn btn-light rounded-pill flex-grow-1 text-start text-muted py-2 px-3 border shadow-none" data-bs-toggle="modal" data-bs-target="#newDiscussionModal">
+                    Start a new discussion or ask a question...
+                </button>
+            </div>
+        </div>
+
+        <!-- Feed Items (Announcements) -->
+        <h5 class="fw-bold text-muted mb-3"><i class="bi bi-megaphone me-2"></i> Announcements</h5>
+        {% for announcement in announcements %}
+            <div class="card shadow-sm border-0 mb-4 rounded-4 {% if announcement.is_pinned %}border-start border-4 border-warning{% endif %}">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 45px; height: 45px;">
+                                <i class="bi bi-person-fill fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ announcement.teacher.full_name }} <span class="badge bg-primary bg-opacity-10 text-primary ms-1">Teacher</span></h6>
+                                <small class="text-muted">{{ announcement.created_at|date:"M d, Y - h:i A" }}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            {% if announcement.is_pinned %}
+                                <span class="badge bg-warning text-dark me-2"><i class="bi bi-pin-angle-fill"></i> Pinned</span>
+                            {% endif %}
+                            {% if request.user.is_teacher %}
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li>
+                                        <form method="POST" action="{% url 'communication:pin_announcement' announcement.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item"><i class="bi bi-pin-angle me-2"></i> {% if announcement.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
+                                        </form>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="POST" action="{% url 'communication:delete_announcement' announcement.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i> Delete</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">{{ announcement.title }}</h5>
+                    <p class="card-text text-dark" style="white-space: pre-wrap;">{{ announcement.content }}</p>
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center text-muted p-4 bg-light rounded-4 mb-4 border">
+                <i class="bi bi-bell-slash fs-1 d-block mb-2"></i>
+                <p class="mb-0">No announcements yet.</p>
+            </div>
+        {% endfor %}
+
+        <!-- Feed Items (Discussions) -->
+        <h5 class="fw-bold text-muted mb-3 mt-5"><i class="bi bi-chat-square-text me-2"></i> Class Discussions</h5>
+        {% for post in discussions %}
+            <div class="card shadow-sm border-0 mb-4 rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 45px; height: 45px;">
+                                <span class="fw-bold">{{ post.author.full_name|make_list|first|upper }}</span>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ post.author.full_name }} {% if post.author.is_teacher %}<span class="badge bg-primary bg-opacity-10 text-primary ms-1">Teacher</span>{% endif %}</h6>
+                                <small class="text-muted">{{ post.created_at|date:"M d, Y - h:i A" }}</small>
+                            </div>
+                        </div>
+                        {% if request.user == post.author %}
+                        <form method="POST" action="{% url 'communication:delete_discussion' post.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    <p class="card-text text-dark" style="white-space: pre-wrap;">{{ post.content }}</p>
+                    
+                    <hr class="text-muted">
+                    
+                    <!-- Replies -->
+                    <div class="ps-4 mb-3 border-start border-2 border-light">
+                        {% for reply in post.replies.all %}
+                            <div class="d-flex mb-3">
+                                <div class="bg-light text-dark rounded-circle d-flex align-items-center justify-content-center me-2 border" style="width: 30px; height: 30px; min-width: 30px;">
+                                    <span class="fw-bold" style="font-size: 0.8rem;">{{ reply.author.full_name|make_list|first|upper }}</span>
+                                </div>
+                                <div class="bg-light rounded-4 p-3 flex-grow-1 border">
+                                    <h6 class="mb-1 fw-bold fs-6">{{ reply.author.full_name }} <small class="text-muted ms-2 fw-normal" style="font-size: 0.75rem;">{{ reply.created_at|date:"M d, h:i A" }}</small></h6>
+                                    <p class="mb-0" style="font-size: 0.95rem; white-space: pre-wrap;">{{ reply.content }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Add Reply -->
+                    <form method="POST" action="{% url 'communication:create_reply' post.id %}" class="d-flex align-items-center mt-3">
+                        {% csrf_token %}
+                        <div class="bg-light text-dark rounded-circle d-flex align-items-center justify-content-center me-2 border shadow-sm" style="width: 35px; height: 35px;">
+                            <span class="fw-bold fs-6">{{ request.user.full_name|make_list|first|upper }}</span>
+                        </div>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="content" class="form-control rounded-start-pill bg-light border-end-0 ps-3 py-2" placeholder="Write a reply..." required autocomplete="off">
+                            <button class="btn btn-light border border-start-0 rounded-end-pill px-3 text-primary" type="submit"><i class="bi bi-send-fill"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center text-muted p-4 bg-light rounded-4 border">
+                <i class="bi bi-chat-dots fs-1 d-block mb-2"></i>
+                <p class="mb-0">No discussions yet. Start one above!</p>
+            </div>
+        {% endfor %}
+        
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 mb-4 rounded-4 position-sticky" style="top: 2rem;">
+            <div class="card-body p-4 text-center">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                    <i class="bi bi-people-fill display-5"></i>
+                </div>
+                <h5 class="fw-bold">{{ classroom.name }}</h5>
+                <p class="text-muted small mb-4">Teacher: {{ classroom.teacher.full_name }}</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'communication:inbox' %}" class="btn btn-primary rounded-pill fw-bold"><i class="bi bi-envelope me-2"></i> Open Inbox</a>
+                    <a href="{% url 'classroom:classroom_detail' classroom.id %}" class="btn btn-outline-secondary rounded-pill fw-bold">View Class Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Discussion Modal -->
+<div class="modal fade" id="newDiscussionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold">Create Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'communication:create_discussion' classroom.id %}">
+                {% csrf_token %}
+                <div class="modal-body px-4 pt-3 pb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-light text-dark rounded-circle d-flex align-items-center justify-content-center me-3 border" style="width: 40px; height: 40px;">
+                            <span class="fw-bold">{{ request.user.full_name|make_list|first|upper }}</span>
+                        </div>
+                        <h6 class="mb-0 fw-bold">{{ request.user.full_name }}</h6>
+                    </div>
+                    <textarea name="content" class="form-control border-0 bg-light rounded-4 p-3" rows="4" placeholder="What do you want to discuss?" required autofocus></textarea>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h2 class="fw-bold mb-1">Learning Engine</h2>
+        <p class="text-muted mb-0">AI-powered insights based on your academic performance.</p>
+    </div>
+    <div>
+        <form method="POST" action="{% url 'ai_learning:generate_insights_api' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary shadow-sm fw-bold"><i class="bi bi-magic text-warning me-2"></i> Update Insights</button>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Strengths -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm transition-hover" style="border-top: 4px solid var(--success-green);">
+            <div class="card-header bg-white pt-4 pb-0 border-bottom-0">
+                <h5 class="fw-bold text-success"><i class="bi bi-graph-up-arrow me-2"></i> Strong Areas</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if strength %}
+                    <p class="text-dark">{{ strength.content }}</p>
+                    <p class="text-muted small mt-3 mb-0"><i class="bi bi-clock me-1"></i> Last updated: {{ strength.generated_at|date:"M d, Y" }}</p>
+                {% else %}
+                    <div class="text-center text-muted p-3">
+                        <i class="bi bi-shield-check display-4 mb-2 d-block"></i>
+                        <p>No strength insights available yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Weaknesses -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm transition-hover" style="border-top: 4px solid var(--danger-red);">
+            <div class="card-header bg-white pt-4 pb-0 border-bottom-0">
+                <h5 class="fw-bold text-danger"><i class="bi bi-graph-down-arrow me-2"></i> Areas for Improvement</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if weakness %}
+                    <p class="text-dark">{{ weakness.content }}</p>
+                    <p class="text-muted small mt-3 mb-0"><i class="bi bi-clock me-1"></i> Last updated: {{ weakness.generated_at|date:"M d, Y" }}</p>
+                {% else %}
+                    <div class="text-center text-muted p-3">
+                        <i class="bi bi-shield-exclamation display-4 mb-2 d-block"></i>
+                        <p>No weakness insights available yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm transition-hover" style="border-top: 4px solid var(--primary-blue);">
+            <div class="card-header bg-white pt-4 pb-0 border-bottom-0">
+                <h5 class="fw-bold text-primary"><i class="bi bi-lightbulb-fill me-2 text-warning"></i> AI Action Plan</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if recommendation %}
+                    <p class="text-dark">{{ recommendation.content }}</p>
+                    <p class="text-muted small mt-3 mb-0"><i class="bi bi-clock me-1"></i> Last updated: {{ recommendation.generated_at|date:"M d, Y" }}</p>
+                {% else %}
+                    <div class="text-center text-muted p-3">
+                        <i class="bi bi-map display-4 mb-2 d-block"></i>
+                        <p>Click "Update Insights" to generate a personalized plan.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1));">
+    <div class="card-body p-5 text-center">
+        <i class="bi bi-robot display-4 text-primary mb-3 d-block"></i>
+        <h3 class="fw-bold">Need Help Understanding a Concept?</h3>
+        <p class="text-muted max-w-md mx-auto mb-4">Your AI Tutor is available 24/7 to provide detailed, step-by-step academic explanations without giving away the answers.</p>
+        <a href="{% url 'ai_learning:tutor_chat_new' %}" class="btn btn-primary btn-lg fw-bold px-5 shadow-sm">Start Tutoring Session</a>
+    </div>
+</div>
+{% endblock %}

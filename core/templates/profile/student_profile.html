@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="bg-primary text-white p-5 rounded-3 shadow position-relative overflow-hidden text-center">
+            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);"></div>
+            <i class="bi bi-person-circle display-1 mb-3 position-relative z-index-1"></i>
+            <h1 class="display-4 fw-bold position-relative z-index-1 mb-1">{{ profile_user.full_name }}</h1>
+            <p class="lead mb-0 position-relative z-index-1">@{{ profile_user.username }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-0 shadow-sm bg-light">
+            <div class="card-body py-4">
+                <i class="bi bi-journal-check display-4 text-primary mb-3"></i>
+                <h2 class="fw-bold">{{ stats.total_quizzes }}</h2>
+                <p class="text-muted mb-0">Quizzes Completed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-0 shadow-sm bg-light">
+            <div class="card-body py-4">
+                <i class="bi bi-star-fill display-4 text-warning mb-3"></i>
+                <h2 class="fw-bold">{{ stats.avg_score }}%</h2>
+                <p class="text-muted mb-0">Average Quiz Score</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 text-center border-0 shadow-sm bg-light">
+            <div class="card-body py-4">
+                <i class="bi bi-file-earmark-text display-4 text-success mb-3"></i>
+                <h2 class="fw-bold">{{ stats.total_assignments }}</h2>
+                <p class="text-muted mb-0">Assignments Submitted</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Career & Badges -->
+    <div class="col-md-5">
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h4 class="fw-bold"><i class="bi bi-briefcase-fill text-primary me-2"></i> Career Goal</h4>
+            </div>
+            <div class="card-body">
+                {% if latest_roadmap %}
+                    <h5 class="text-info">{{ latest_roadmap.dream_job }}</h5>
+                    <div class="p-3 bg-light rounded text-sm mt-3 border">
+                        <h6 class="text-muted mb-2">Target Skills</h6>
+                        {{ latest_roadmap.skills_required|safe }}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-muted border rounded bg-light border-dashed">
+                        <i class="bi bi-compass fs-2 mb-2"></i>
+                        <p class="mb-0">No career roadmap defined yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Recent Activity -->
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h4 class="fw-bold"><i class="bi bi-activity text-success me-2"></i> Recent Achievements</h4>
+            </div>
+            <div class="card-body">
+                {% if quiz_attempts or assignment_submissions %}
+                    <div class="list-group list-group-flush border-top">
+                        {% for attempt in quiz_attempts %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-0 border-bottom">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">{{ attempt.quiz.title }}</h6>
+                                    <small class="text-muted"><i class="bi bi-calendar3"></i> {{ attempt.submitted_at|date:"M d, Y" }}</small>
+                                </div>
+                                <span class="badge bg-{% if attempt.percentage >= 80 %}success{% elif attempt.percentage >= 50 %}warning{% else %}danger{% endif %} rounded-pill fs-6 px-3">
+                                    {{ attempt.percentage }}%
+                                </span>
+                            </div>
+                        {% endfor %}
+                        
+                        {% for sub in assignment_submissions %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-0 border-bottom">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">{{ sub.assignment.title }}</h6>
+                                    <small class="text-muted"><i class="bi bi-calendar3"></i> {{ sub.submitted_at|date:"M d, Y" }}</small>
+                                </div>
+                                <span class="badge bg-info rounded-pill fs-6 px-3">
+                                    {{ sub.marks_obtained }} / {{ sub.assignment.max_marks }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 text-muted border rounded bg-light border-dashed h-100 d-flex flex-column justify-content-center">
+                        <i class="bi bi-inbox fs-1 mb-3"></i>
+                        <p class="mb-0">No recent activity to show.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

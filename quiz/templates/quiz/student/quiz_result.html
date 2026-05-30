@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white text-center py-4">
+                <h2 class="mb-0">Quiz Results: {{ attempt.quiz.title }}</h2>
+                <p class="text-muted mb-0 mt-2">Completed on {{ attempt.submitted_at|date:"M d, Y h:i A" }}</p>
+            </div>
+            <div class="card-body p-5 text-center">
+                
+                <h4 class="mb-4">Your Score:</h4>
+                <div class="display-1 fw-bold {% if attempt.percentage >= attempt.quiz.passing_marks|default:50 %}text-success{% else %}text-danger{% endif %} mb-4">
+                    {{ attempt.score }} <span class="fs-4 text-muted">/ {{ attempt.quiz.total_marks }}</span>
+                </div>
+                
+                <div class="progress mb-4" style="height: 30px;">
+                    <div class="progress-bar {% if attempt.percentage >= attempt.quiz.passing_marks|default:50 %}bg-success{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ attempt.percentage }}%;" aria-valuenow="{{ attempt.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                        <span class="fs-5">{{ attempt.percentage|floatformat:0 }}%</span>
+                    </div>
+                </div>
+
+                {% if attempt.percentage >= attempt.quiz.passing_marks|default:50 %}
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle-fill me-2 fs-5"></i> <strong>Congratulations!</strong> You passed the quiz.
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-x-circle-fill me-2 fs-5"></i> <strong>Keep practicing!</strong> You did not meet the passing score.
+                    </div>
+                {% endif %}
+
+                <div class="mt-5">
+                    <a href="{% url 'quiz:student_quiz_list' %}" class="btn btn-outline-secondary">Back to Quizzes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

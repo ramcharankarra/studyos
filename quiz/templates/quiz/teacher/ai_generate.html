@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mt-4 border-primary">
+            <div class="card-header bg-primary text-white d-flex align-items-center">
+                <i class="bi bi-robot fs-4 me-2"></i>
+                <h3 class="mb-0">Generate Quiz via AI</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">StudyOS uses Gemini AI to automatically generate multiple-choice questions for your class. You will be able to review and edit the generated questions before publishing.</p>
+                {% if not form.fields.classroom.queryset.exists %}
+                    <div class="alert alert-warning">
+                        You need to create a Classroom first.
+                    </div>
+                {% else %}
+                    <form method="POST" id="aiForm" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary" id="generateBtn">
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="loadingSpinner"></span>
+                                <span id="btnText">Generate with AI</span>
+                            </button>
+                            <a href="{% url 'quiz:quiz_list' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('aiForm').addEventListener('submit', function() {
+        document.getElementById('loadingSpinner').classList.remove('d-none');
+        document.getElementById('btnText').innerText = ' Generating... Please wait...';
+        document.getElementById('generateBtn').disabled = true;
+    });
+</script>
+{% endblock %}

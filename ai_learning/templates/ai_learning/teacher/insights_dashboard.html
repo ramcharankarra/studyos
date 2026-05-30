@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-gradient">Class Insights</h2>
+        <p class="text-muted mb-0">AI-generated analytics for your classes based on student performance.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-5">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-10">
+                <label class="form-label text-muted small fw-bold">Select a Class</label>
+                <select name="classroom" class="form-select border-start-0 ps-3">
+                    <option value="">-- Choose a Class --</option>
+                    {% for c in classrooms %}
+                        <option value="{{ c.id }}" {% if selected_class and selected_class.id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100 fw-bold">View Insights</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if selected_class %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold"><i class="bi bi-bar-chart-fill text-primary me-2"></i> Insights for {{ selected_class.name }}</h4>
+    <form method="POST" action="{% url 'ai_learning:generate_class_insights_api' selected_class.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary fw-bold shadow-sm"><i class="bi bi-arrow-clockwise me-2"></i> Regenerate Analysis</button>
+    </form>
+</div>
+
+<div class="row g-4">
+    <!-- Strengths -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm transition-hover" style="border-top: 4px solid var(--success-green);">
+            <div class="card-header bg-white pt-4 pb-0 border-bottom-0">
+                <h5 class="fw-bold text-success"><i class="bi bi-graph-up-arrow me-2"></i> Class Strengths</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if insights.strength %}
+                    <p class="text-dark">{{ insights.strength.content }}</p>
+                    <p class="text-muted small mt-3 mb-0"><i class="bi bi-clock me-1"></i> Last updated: {{ insights.strength.generated_at|date:"M d, Y" }}</p>
+                {% else %}
+                    <div class="text-center text-muted p-3">
+                        <i class="bi bi-shield-check display-4 mb-2 d-block"></i>
+                        <p>No strength data available.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Weaknesses -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm transition-hover" style="border-top: 4px solid var(--danger-red);">
+            <div class="card-header bg-white pt-4 pb-0 border-bottom-0">
+                <h5 class="fw-bold text-danger"><i class="bi bi-exclamation-triangle me-2"></i> Frequently Missed</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if insights.weakness %}
+                    <p class="text-dark">{{ insights.weakness.content }}</p>
+                    <p class="text-muted small mt-3 mb-0"><i class="bi bi-clock me-1"></i> Last updated: {{ insights.weakness.generated_at|date:"M d, Y" }}</p>
+                {% else %}
+                    <div class="text-center text-muted p-3">
+                        <i class="bi bi-shield-exclamation display-4 mb-2 d-block"></i>
+                        <p>No weakness data available.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm transition-hover" style="border-top: 4px solid var(--primary-blue);">
+            <div class="card-header bg-white pt-4 pb-0 border-bottom-0">
+                <h5 class="fw-bold text-primary"><i class="bi bi-lightbulb-fill me-2 text-warning"></i> Teaching Strategy</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if insights.recommendation %}
+                    <p class="text-dark">{{ insights.recommendation.content }}</p>
+                    <p class="text-muted small mt-3 mb-0"><i class="bi bi-clock me-1"></i> Last updated: {{ insights.recommendation.generated_at|date:"M d, Y" }}</p>
+                {% else %}
+                    <div class="text-center text-muted p-3">
+                        <i class="bi bi-map display-4 mb-2 d-block"></i>
+                        <p>Click "Regenerate Analysis" to create an AI teaching strategy.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-bar-chart empty-state-icon text-muted"></i>
+    <h3 class="fw-bold">Select a Class</h3>
+    <p class="text-muted mb-4">Choose a classroom from the dropdown above to view aggregated AI insights.</p>
+</div>
+{% endif %}
+
+{% endblock %}

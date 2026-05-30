@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white text-center py-4">
+                <h2 class="mb-0">{{ quiz.title }}</h2>
+                <p class="text-muted mb-0 mt-2">{{ quiz.classroom.name }}</p>
+            </div>
+            <div class="card-body p-5">
+                <h5 class="mb-3">Instructions:</h5>
+                <p>{{ quiz.description|default:"No specific instructions provided." }}</p>
+                
+                <ul class="list-group list-group-flush my-4">
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        Total Questions:
+                        <span class="badge bg-primary rounded-pill">{{ quiz.questions.count }}</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        Total Marks:
+                        <span class="badge bg-primary rounded-pill">{{ quiz.total_marks }}</span>
+                    </li>
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        Time Limit:
+                        <span class="badge bg-danger rounded-pill">{{ quiz.time_limit_minutes }} Minutes</span>
+                    </li>
+                </ul>
+
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> Once you start the quiz, the timer will begin. The quiz will auto-submit when the time expires. Do not refresh or close the page.
+                </div>
+
+                <div class="text-center mt-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg px-5">Start Attempt</button>
+                        <a href="{% url 'quiz:student_quiz_list' %}" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

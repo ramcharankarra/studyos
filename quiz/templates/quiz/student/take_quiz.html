@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 sticky-top bg-light py-3" style="z-index: 100;">
+    <h3 class="mb-0">{{ quiz.title }}</h3>
+    <div class="text-end">
+        <h4 class="mb-0 text-danger" id="timerDisplay">--:--</h4>
+        <small class="text-muted">Time Remaining</small>
+    </div>
+</div>
+
+<form method="POST" id="quizForm">
+    {% csrf_token %}
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {% for question in quiz.questions.all %}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">
+                        <span class="badge bg-secondary me-2">Q{{ forloop.counter }}</span>
+                        {{ question.question_text }}
+                    </h5>
+                    
+                    <div class="list-group">
+                        {% for choice in question.choices.all %}
+                        <label class="list-group-item list-group-item-action">
+                            <input class="form-check-input me-2" type="radio" name="{{ question.id }}" value="{{ choice.id }}" required>
+                            {{ choice.choice_text }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="card shadow-sm mb-5">
+                <div class="card-body text-center p-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn">Submit Quiz</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    // Timer Logic
+    const timeLimitMinutes = {{ quiz.time_limit_minutes }};
+    const timeLimitSeconds = timeLimitMinutes * 60;
+    
+    // In a real production app, we would calculate this based on attempt.started_at from the server
+    // to prevent local tampering, but for simplicity here we use a client side countdown.
+    let timeRemaining = timeLimitSeconds;
+    
+    const timerDisplay = document.getElementById('timerDisplay');
+    const quizForm = document.getElementById('quizForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function updateTimer() {
+        const minutes = Math.floor(timeRemaining / 60);
+        let seconds = timeRemaining % 60;
+        
+        if (seconds < 10) {
+            seconds = '0' + seconds;
+        }
+        
+        timerDisplay.textContent = minutes + ':' + seconds;
+        
+        if (timeRemaining <= 300) { // 5 minutes warning
+            timerDisplay.classList.add('text-danger');
+        }
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            timerDisplay.textContent = "00:00";
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Time's up! Auto-submitting...";
+            
+            // Auto submit
+            quizForm.submit();
+        } else {
+            timeRemaining--;
+        }
+    }
+
+    const timerInterval = setInterval(updateTimer, 1000);
+    updateTimer(); // initial call
+    
+    // Prevent accidental navigation
+    window.onbeforeunload = function() {
+        return "Are you sure you want to leave? Your progress will be lost.";
+    };
+    
+    quizForm.addEventListener('submit', function() {
+        window.onbeforeunload = null; // Remove prompt when intentionally submitting
+    });
+</script>
+{% endblock %}

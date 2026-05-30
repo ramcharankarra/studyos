@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-gradient fw-bold">AI Study Notes</h2>
+        <p class="text-muted mb-0">Upload documents and let AI generate your study materials.</p>
+    </div>
+    <a href="{% url 'study_notes:upload_note' %}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+        <i class="bi bi-file-earmark-arrow-up me-2"></i>Upload Document
+    </a>
+</div>
+
+<div class="row g-4">
+    {% for note in notes %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                        <i class="bi bi-file-earmark-text fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-truncate" style="max-width: 200px;">{{ note.title }}</h6>
+                        <small class="text-muted">{{ note.created_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {% if note.summary == "" %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i> Processing AI...</span>
+                    {% elif "Error" in note.summary %}
+                        <span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i> Failed</span>
+                    {% else %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Ready</span>
+                        <span class="badge bg-info text-dark ms-1"><i class="bi bi-card-text me-1"></i> {{ note.flashcards_json|length }} Flashcards</span>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                    <a href="{% url 'study_notes:note_detail' note.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">View Notes</a>
+                    <form action="{% url 'study_notes:delete_note' note.id %}" method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to delete these notes?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-light text-danger rounded-circle"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="empty-state">
+            <i class="bi bi-file-earmark-richtext empty-state-icon"></i>
+            <h4 class="fw-bold">No Study Notes Yet</h4>
+            <p class="text-muted">Upload a PDF, Word document, or PowerPoint to magically generate summaries and flashcards.</p>
+            <a href="{% url 'study_notes:upload_note' %}" class="btn btn-primary rounded-pill px-4 mt-2">Upload First Document</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

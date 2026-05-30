@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-gradient fw-bold">{{ classroom.name }}</h2>
+        <span class="badge bg-primary bg-opacity-10 text-primary fs-6 border border-primary">Class Code: {{ classroom.class_code }}</span>
+    </div>
+    <div>
+        <a href="{% url 'communication:classroom_feed' classroom.id %}" class="btn btn-info text-white shadow-sm"><i class="bi bi-chat-square-text"></i> Class Feed</a>
+        <a href="{% url 'classroom:classroom_update' classroom.id %}" class="btn btn-outline-primary shadow-sm ms-2"><i class="bi bi-pencil-square"></i> Edit Class</a>
+        <a href="{% url 'classroom:class_list' %}" class="btn btn-outline-secondary ms-2 shadow-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4 border-0">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-info-circle text-primary me-2"></i> Class Description</h5>
+        <p class="text-muted mb-0">{{ classroom.description|default:"No description provided." }}</p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white pt-4 pb-3 border-bottom d-flex justify-content-between align-items-center">
+        <h4 class="mb-0 fw-bold"><i class="bi bi-people-fill text-success me-2"></i> Enrolled Students ({{ enrollments.count }})</h4>
+        <form method="GET" class="d-flex">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" name="q" class="form-control border-start-0 ps-0 form-control-sm" placeholder="Search students..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-sm btn-outline-primary fw-bold">Search</button>
+            </div>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        {% if enrollments %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Enrolled On</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enrollment in enrollments %}
+                        <tr>
+                            <td class="py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <span class="fw-bold">{{ enrollment.student.full_name|make_list|first|upper }}</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ enrollment.student.full_name }}</h6>
+                                        <small class="text-muted">{{ enrollment.student.username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="text-muted small"><i class="bi bi-calendar-check me-1"></i> {{ enrollment.enrolled_at|date:"M d, Y" }}</span></td>
+                            <td class="text-end">
+                                <form action="{% url 'classroom:remove_student' classroom.id enrollment.student.id %}" method="POST" class="d-inline" onsubmit="return confirm('Remove student from class?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-person-x"></i> Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-person-x empty-state-icon text-muted"></i>
+                <h4 class="fw-bold">No Students Enrolled</h4>
+                {% if search_query %}
+                    <p class="text-muted">No students match your search "{{ search_query }}".</p>
+                    <a href="?" class="btn btn-outline-secondary px-4 mt-2">Clear Search</a>
+                {% else %}
+                    <p class="text-muted">Share the class code <strong class="text-primary fs-5 bg-light px-2 py-1 rounded">{{ classroom.class_code }}</strong> with students to have them join.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 70vh;">
+    <h1 class="display-1 fw-bold text-warning mb-3">403</h1>
+    <h3 class="fw-bold mb-4">Access Denied</h3>
+    <p class="text-muted max-w-md mx-auto mb-5">You do not have permission to view this directory or page using the credentials that you supplied.</p>
+    <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm">Go to Dashboard</a>
+</div>
+{% endblock %}

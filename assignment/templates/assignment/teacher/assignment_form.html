@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-header bg-white pt-4 pb-3 border-bottom">
+                <h3 class="mb-0 fw-bold"><i class="bi bi-journal-plus text-primary me-2"></i> {{ action }} Assignment</h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            {{ form.title|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.classroom|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.deadline|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.max_marks|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.attachment|as_crispy_field }}
+                            <small class="text-muted"><i class="bi bi-info-circle"></i> Allowed: PDF, DOC, PPT, ZIP (Max 10MB)</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            {{ form.description|as_crispy_field }}
+                        </div>
+                        <div class="col-12 mb-3">
+                            {{ form.instructions|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                        <a href="{% url 'assignment:teacher_assignment_list' %}" class="btn btn-outline-secondary px-4 me-2">Cancel</a>
+                        <button type="submit" class="btn btn-success px-5 fw-bold shadow-sm">Save Assignment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

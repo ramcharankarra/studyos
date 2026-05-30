@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 fw-bold text-primary">{{ note.title }}</h2>
+        <p class="text-muted mb-0">Generated from {{ note.file_type|upper }} file uploaded on {{ note.created_at|date:"M d, Y" }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ note.original_file.url }}" target="_blank" class="btn btn-outline-secondary rounded-pill px-3"><i class="bi bi-file-earmark me-1"></i> Original File</a>
+        <a href="{% url 'study_notes:dashboard' %}" class="btn btn-light rounded-pill px-3"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+</div>
+
+{% if is_processing %}
+<div class="card shadow-sm border-0 rounded-4 p-5 text-center my-5">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+    <h4 class="fw-bold mt-4">AI is analyzing your document...</h4>
+    <p class="text-muted">Extracting key concepts, summarizing text, and building flashcards. This usually takes 30-60 seconds.</p>
+    <script>
+        // Auto-refresh the page every 10 seconds while processing
+        setTimeout(function() {
+            window.location.reload();
+        }, 10000);
+    </script>
+</div>
+{% elif "Error" in note.summary %}
+<div class="alert alert-danger shadow-sm border-0 rounded-4 p-4 my-5">
+    <h4 class="fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Generation Failed</h4>
+    <p class="mb-0">{{ note.summary }}</p>
+</div>
+{% else %}
+<!-- Tabs Navigation -->
+<ul class="nav nav-pills mb-4" id="notesTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active rounded-pill fw-bold px-4" id="summary-tab" data-bs-toggle="pill" data-bs-target="#summary" type="button" role="tab"><i class="bi bi-card-text me-1"></i> Summary</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill fw-bold px-4 mx-2" id="concepts-tab" data-bs-toggle="pill" data-bs-target="#concepts" type="button" role="tab"><i class="bi bi-lightbulb me-1"></i> Key Concepts</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill fw-bold px-4" id="questions-tab" data-bs-toggle="pill" data-bs-target="#questions" type="button" role="tab"><i class="bi bi-question-circle me-1"></i> Important Questions</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill fw-bold px-4 mx-2" id="flashcards-tab" data-bs-toggle="pill" data-bs-target="#flashcards" type="button" role="tab"><i class="bi bi-collection me-1"></i> Flashcards</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link rounded-pill fw-bold px-4" id="revision-tab" data-bs-toggle="pill" data-bs-target="#revision" type="button" role="tab"><i class="bi bi-file-earmark-check me-1"></i> Revision Sheet</button>
+    </li>
+</ul>
+
+<!-- Tabs Content -->
+<div class="tab-content" id="notesTabContent">
+    
+    <!-- Summary Tab -->
+    <div class="tab-pane fade show active" id="summary" role="tabpanel">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4 p-lg-5" style="line-height: 1.8;">
+                {{ note.summary|safe }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Concepts Tab -->
+    <div class="tab-pane fade" id="concepts" role="tabpanel">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4 p-lg-5" style="line-height: 1.8;">
+                {{ note.key_concepts|safe }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Important Questions Tab -->
+    <div class="tab-pane fade" id="questions" role="tabpanel">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4 p-lg-5" style="line-height: 1.8;">
+                {{ note.important_questions|safe }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Flashcards Tab -->
+    <div class="tab-pane fade" id="flashcards" role="tabpanel">
+        <div class="row g-4">
+            {% for card in note.flashcards_json %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100 flashcard" style="cursor: pointer;" onclick="this.classList.toggle('flipped')">
+                    <div class="card-body p-4 d-flex align-items-center justify-content-center text-center" style="min-height: 200px; transform-style: preserve-3d; transition: transform 0.6s;">
+                        <div class="flashcard-front position-absolute w-100 h-100 p-4 d-flex align-items-center justify-content-center bg-light rounded-4" style="backface-visibility: hidden;">
+                            <h5 class="fw-bold text-primary mb-0">{{ card.front }}</h5>
+                        </div>
+                        <div class="flashcard-back position-absolute w-100 h-100 p-4 d-flex align-items-center justify-content-center text-white bg-primary rounded-4" style="backface-visibility: hidden; transform: rotateY(180deg);">
+                            <p class="mb-0 fs-5">{{ card.back }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted p-5">No flashcards were generated for this document.</div>
+            {% endfor %}
+        </div>
+        <style>
+            .flashcard.flipped .card-body { transform: rotateY(180deg); }
+        </style>
+    </div>
+
+    <!-- Revision Sheet Tab -->
+    <div class="tab-pane fade" id="revision" role="tabpanel">
+        <div class="card shadow-sm border-0 rounded-4 bg-warning bg-opacity-10 border-warning">
+            <div class="card-body p-4 p-lg-5" style="line-height: 1.8;">
+                {{ note.revision_sheet|safe }}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endif %}
+{% endblock %}

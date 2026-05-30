@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'attendance:session_list' %}" class="text-decoration-none">&larr; Back to Sessions</a>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white pt-4 pb-0 border-bottom-0">
+        <h3>{{ session.classroom.name }} - {{ session.title }}</h3>
+        <p class="text-muted">{{ session.date }} | {{ session.start_time|time:"H:i" }} - {{ session.end_time|time:"H:i" }}</p>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Marked At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in session.records.all %}
+                    <tr>
+                        <td>{{ record.student.get_full_name|default:record.student.username }}</td>
+                        <td>{{ record.student.email }}</td>
+                        <td>
+                            {% if record.status == 'Present' %}
+                                <span class="badge bg-success">Present</span>
+                            {% else %}
+                                <span class="badge bg-danger">Absent</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ record.marked_at|date:"H:i:s" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No students enrolled.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 fw-bold">{{ assignment.title }}</h2>
+        <span class="badge bg-light text-dark border me-2"><i class="bi bi-people me-1"></i> {{ assignment.classroom.name }}</span>
+        <span class="text-muted small">Teacher: {{ assignment.teacher.full_name }}</span>
+    </div>
+    <div>
+        <a href="{% url 'assignment:student_assignment_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8 order-lg-1">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded-3">
+                    <div>
+                        <h6 class="text-muted mb-1">Deadline</h6>
+                        <h5 class="fw-bold {% if assignment.deadline < now and not submission %}text-danger{% else %}text-dark{% endif %} mb-0">
+                            {{ assignment.deadline|date:"M d, Y - h:i A" }}
+                        </h5>
+                    </div>
+                    <div class="text-end">
+                        <h6 class="text-muted mb-1">Max Marks</h6>
+                        <h5 class="fw-bold text-dark mb-0">{{ assignment.max_marks }}</h5>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3">Description</h5>
+                <p class="text-muted">{{ assignment.description|linebreaks|default:"No description provided." }}</p>
+                
+                {% if assignment.instructions %}
+                <h5 class="fw-bold mt-4 mb-3">Instructions</h5>
+                <div class="bg-primary bg-opacity-10 p-3 rounded-3 border border-primary border-opacity-25">
+                    <p class="mb-0 text-dark">{{ assignment.instructions|linebreaks }}</p>
+                </div>
+                {% endif %}
+
+                {% if assignment.attachment %}
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-paperclip text-muted"></i> Reference Material</h6>
+                    <a href="{{ assignment.attachment.url }}" target="_blank" class="btn btn-outline-primary"><i class="bi bi-download"></i> Download Attachment</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 order-lg-2">
+        <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+            <div class="card-header bg-white pt-4 pb-0 border-bottom-0">
+                <h5 class="fw-bold">Your Submission</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if submission %}
+                    <div class="text-center mb-4">
+                        {% if submission.status == 'Graded' %}
+                            <i class="bi bi-check-circle-fill text-success display-1"></i>
+                            <h4 class="fw-bold mt-2 text-success">Graded</h4>
+                        {% else %}
+                            <i class="bi bi-cloud-check-fill text-primary display-1"></i>
+                            <h4 class="fw-bold mt-2 text-primary">Submitted</h4>
+                        {% endif %}
+                        <p class="text-muted small">On {{ submission.submitted_at|date:"M d, Y h:i A" }}</p>
+                    </div>
+
+                    {% if submission.status == 'Graded' %}
+                        <div class="bg-light p-3 rounded-3 mb-3 text-center border">
+                            <h6 class="text-muted mb-1">Your Grade</h6>
+                            <h2 class="fw-bold text-success mb-0">{{ submission.grade }} <span class="fs-5 text-muted">/ {{ assignment.max_marks }}</span></h2>
+                        </div>
+                        {% if submission.feedback %}
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-3 border border-warning border-opacity-25 mb-3">
+                            <h6 class="fw-bold text-warning text-dark"><i class="bi bi-chat-left-text"></i> Teacher Feedback</h6>
+                            <p class="mb-0 small">{{ submission.feedback|linebreaks }}</p>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+
+                    <a href="{{ submission.submitted_file.url }}" target="_blank" class="btn btn-outline-primary w-100 mb-3"><i class="bi bi-file-earmark-check"></i> View Your File</a>
+
+                    {% if can_submit and submission.status != 'Graded' %}
+                        <hr>
+                        <h6 class="fw-bold mb-3 text-muted text-center">Update Submission</h6>
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <button type="submit" class="btn btn-warning w-100 mt-3 fw-bold shadow-sm">Replace File</button>
+                        </form>
+                    {% endif %}
+
+                {% else %}
+                    <div class="text-center mb-4">
+                        {% if assignment.deadline < now %}
+                            <i class="bi bi-x-circle-fill text-danger display-1"></i>
+                            <h4 class="fw-bold mt-2 text-danger">Missing</h4>
+                            <p class="text-muted small">The deadline has passed.</p>
+                        {% else %}
+                            <i class="bi bi-inbox text-muted display-1"></i>
+                            <h4 class="fw-bold mt-2 text-muted">Not Submitted</h4>
+                            <p class="text-muted small">Upload your work before the deadline.</p>
+                        {% endif %}
+                    </div>
+
+                    {% if can_submit %}
+                        <form method="POST" enctype="multipart/form-data" class="mt-4 border-top pt-4">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <button type="submit" class="btn btn-success w-100 mt-3 fw-bold shadow-sm"><i class="bi bi-cloud-arrow-up"></i> Submit Work</button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-danger text-center mb-0">
+                            Submissions are closed for this assignment.
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

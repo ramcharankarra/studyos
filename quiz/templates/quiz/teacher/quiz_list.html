@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-gradient">My Quizzes</h2>
+        <p class="text-muted mb-0">Manage assessments and track performance.</p>
+    </div>
+    <div>
+        <div class="btn-group shadow-sm">
+            <a href="{% url 'quiz:quiz_create' %}" class="btn btn-outline-primary fw-bold"><i class="bi bi-pencil-square"></i> Manual Quiz</a>
+            <a href="{% url 'quiz:ai_generate' %}" class="btn btn-primary fw-bold"><i class="bi bi-magic text-warning"></i> Generate AI Quiz</a>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4 border-0">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-10">
+                <label class="form-label text-muted small fw-bold">Search Quizzes</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="e.g. Midterm..." value="{{ request.GET.q|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100 fw-bold">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if quizzes %}
+<div class="row g-4">
+    {% for quiz in quizzes %}
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 transition-hover" style="border-top: 4px solid {% if quiz.is_published %}var(--success-green){% else %}var(--warning-amber){% endif %} !important;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge {% if quiz.is_published %}bg-success{% else %}bg-warning text-dark{% endif %} bg-opacity-10 text-{% if quiz.is_published %}success{% else %}warning{% endif %}">
+                        {% if quiz.is_published %}<i class="bi bi-globe me-1"></i> Published{% else %}<i class="bi bi-lock me-1"></i> Draft{% endif %}
+                    </span>
+                    <span class="badge bg-light text-dark border"><i class="bi bi-people me-1"></i> {{ quiz.classroom.name }}</span>
+                </div>
+                <h4 class="card-title fw-bold text-dark mt-3 mb-1">{{ quiz.title }}</h4>
+                <p class="card-text text-truncate text-muted mt-2">{{ quiz.description|default:"No description provided." }}</p>
+            </div>
+            <div class="card-footer bg-white border-top border-light d-flex justify-content-between align-items-center py-3">
+                <small class="text-muted"><i class="bi bi-clock"></i> {{ quiz.time_limit_minutes }} mins</small>
+                <div>
+                    <a href="{% url 'quiz:quiz_detail' quiz.id %}" class="btn btn-sm btn-primary px-3">Manage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% include 'includes/pagination.html' %}
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-journal-check empty-state-icon text-primary"></i>
+    <h3 class="fw-bold">No Quizzes Found</h3>
+    <p class="text-muted mb-4">You haven't created any quizzes yet or no quizzes match your search.</p>
+    <div>
+        <a href="{% url 'quiz:ai_generate' %}" class="btn btn-primary shadow-sm me-2 fw-bold"><i class="bi bi-magic text-warning"></i> Generate AI Quiz</a>
+        <a href="{% url 'quiz:quiz_create' %}" class="btn btn-outline-primary">Create Manual Quiz</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

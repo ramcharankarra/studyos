@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-gradient">Assignments</h2>
+        <p class="text-muted mb-0">Manage homework, projects, and tasks for your classes.</p>
+    </div>
+    <div>
+        <a href="{% url 'assignment:assignment_create' %}" class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg"></i> Create Assignment</a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label text-muted small fw-bold">Search Assignments</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="e.g. Midterm Project..." value="{{ request.GET.q|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label text-muted small fw-bold">Filter by Class</label>
+                <select name="classroom" class="form-select">
+                    <option value="">All Classes</option>
+                    {% for c in classrooms %}
+                        <option value="{{ c.id }}" {% if request.GET.classroom == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if assignments %}
+<div class="row g-4">
+    {% for assignment in assignments %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0" style="border-top: 4px solid {% if assignment.is_published %}var(--success-green){% else %}var(--warning-amber){% endif %} !important;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge {% if assignment.is_published %}bg-success{% else %}bg-warning text-dark{% endif %} bg-opacity-10 text-{% if assignment.is_published %}success{% else %}warning{% endif %}">
+                        {% if assignment.is_published %}<i class="bi bi-globe me-1"></i> Published{% else %}<i class="bi bi-lock me-1"></i> Draft{% endif %}
+                    </span>
+                    <span class="badge bg-light text-dark border"><i class="bi bi-people me-1"></i> {{ assignment.classroom.name }}</span>
+                </div>
+                
+                <h4 class="card-title fw-bold mt-3 mb-1">{{ assignment.title }}</h4>
+                <p class="text-muted small mb-3"><i class="bi bi-calendar-event me-1"></i> Due: {{ assignment.deadline|date:"M d, Y - h:i A" }}</p>
+                
+                <p class="card-text text-truncate">{{ assignment.description|default:"No description provided." }}</p>
+            </div>
+            <div class="card-footer bg-white border-top border-light d-flex justify-content-between align-items-center py-3">
+                <div class="text-muted small">
+                    <i class="bi bi-file-earmark-text"></i> {{ assignment.submissions.count }} Submissions
+                </div>
+                <div>
+                    <a href="{% url 'assignment:teacher_assignment_detail' assignment.id %}" class="btn btn-sm btn-primary px-3">Manage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% include 'includes/pagination.html' %}
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-journal-plus empty-state-icon text-primary"></i>
+    <h3 class="fw-bold">No Assignments Yet</h3>
+    <p class="text-muted mb-4">Create your first assignment to start evaluating your students.</p>
+    <a href="{% url 'assignment:assignment_create' %}" class="btn btn-primary px-4 py-2">Create Assignment</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-gradient">My Assignments</h2>
+        <p class="text-muted mb-0">View and submit your pending coursework.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4 border-0">
+    <div class="card-body p-2">
+        <ul class="nav nav-pills nav-fill">
+            <li class="nav-item">
+                <a class="nav-link {% if not request.GET.status or request.GET.status == 'all' %}active bg-primary{% endif %} fw-bold" href="?status=all">All Assignments</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.GET.status == 'pending' %}active bg-primary{% endif %} fw-bold" href="?status=pending">Pending <span class="badge bg-white text-primary ms-1 rounded-pill">!</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.GET.status == 'submitted' %}active bg-primary{% endif %} fw-bold" href="?status=submitted">Submitted <i class="bi bi-check-circle-fill ms-1"></i></a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+{% if assignments %}
+<div class="row g-4">
+    {% for assignment in assignments %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 transition-hover">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-light text-dark border"><i class="bi bi-people me-1"></i> {{ assignment.classroom.name }}</span>
+                    {% if assignment.deadline < now %}
+                        <span class="badge bg-danger">Past Due</span>
+                    {% else %}
+                        <span class="badge bg-info bg-opacity-10 text-info text-dark border border-info">Due Soon</span>
+                    {% endif %}
+                </div>
+                
+                <h4 class="card-title fw-bold mt-3 mb-1">{{ assignment.title }}</h4>
+                <p class="text-muted small mb-3"><i class="bi bi-calendar-event me-1"></i> Due: {{ assignment.deadline|date:"M d, Y - h:i A" }}</p>
+                
+                <p class="card-text text-truncate">{{ assignment.description|default:"No description provided." }}</p>
+            </div>
+            <div class="card-footer bg-white border-top border-light py-3">
+                <a href="{% url 'assignment:student_assignment_detail' assignment.id %}" class="btn btn-outline-primary w-100 fw-bold">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% include 'includes/pagination.html' %}
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-emoji-smile empty-state-icon text-success"></i>
+    <h3 class="fw-bold">All Caught Up!</h3>
+    <p class="text-muted mb-4">You have no assignments matching this filter.</p>
+</div>
+{% endif %}
+{% endblock %}

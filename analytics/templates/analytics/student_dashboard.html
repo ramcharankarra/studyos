@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">My Analytics</h2>
+        <p class="text-muted mb-0">Track your academic progress and AI insights.</p>
+    </div>
+</div>
+
+<!-- Key Insights Cards (From AI Learning) -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm" style="border-top: 4px solid var(--success-green);">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-muted fw-bold mb-3"><i class="bi bi-graph-up-arrow text-success me-2"></i> Core Strength</h6>
+                <p class="mb-0 text-dark">{{ data.strength|default:"Complete more quizzes to generate your strengths." }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm" style="border-top: 4px solid var(--danger-red);">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-muted fw-bold mb-3"><i class="bi bi-graph-down-arrow text-danger me-2"></i> Focus Area</h6>
+                <p class="mb-0 text-dark">{{ data.weakness|default:"Complete more quizzes to identify focus areas." }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm" style="border-top: 4px solid var(--primary-blue);">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-muted fw-bold mb-3"><i class="bi bi-lightbulb text-warning me-2"></i> AI Recommendation</h6>
+                <p class="mb-0 text-dark">{{ data.recommendation|default:"Keep learning! Recommendations will appear here." }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Quiz Timeline -->
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white pt-4 pb-3 border-bottom-0">
+                <h5 class="fw-bold mb-0">Learning Progress Timeline</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="quizTimelineChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Subject Performance -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white pt-4 pb-3 border-bottom-0">
+                <h5 class="fw-bold mb-0">Subject Mastery</h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="subjectDoughnutChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Future Ready Attendance Block -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100 bg-light">
+            <div class="card-body p-4 text-center d-flex flex-column justify-content-center">
+                <i class="bi bi-calendar-check display-4 text-muted mb-3"></i>
+                <h5 class="fw-bold text-muted">Attendance Trends</h5>
+                <p class="text-muted small">The attendance tracking module is coming soon.</p>
+                <span class="badge bg-secondary w-50 mx-auto">Coming Soon</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Assignment Performance Bar Chart -->
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white pt-4 pb-3 border-bottom-0">
+                <h5 class="fw-bold mb-0">Recent Assignments</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="assignmentBarChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Colors
+    const primaryBlue = '#4facfe';
+    const primaryLight = 'rgba(79, 172, 254, 0.2)';
+    const successGreen = '#20c997';
+    
+    // 1. Quiz Timeline Chart (Line)
+    const ctxQuiz = document.getElementById('quizTimelineChart').getContext('2d');
+    const quizLabels = {{ data.quiz_labels|safe }};
+    const quizScores = {{ data.quiz_scores|safe }};
+    
+    if (quizLabels.length > 0) {
+        new Chart(ctxQuiz, {
+            type: 'line',
+            data: {
+                labels: quizLabels,
+                datasets: [{
+                    label: 'Quiz Score (%)',
+                    data: quizScores,
+                    borderColor: primaryBlue,
+                    backgroundColor: primaryLight,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: primaryBlue,
+                    pointRadius: 5,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+    } else {
+        document.getElementById('quizTimelineChart').outerHTML = '<div class="text-center text-muted p-5">Not enough quiz data to show trends.</div>';
+    }
+
+    // 2. Subject Mastery Chart (Doughnut)
+    const ctxSubject = document.getElementById('subjectDoughnutChart').getContext('2d');
+    const subjectLabels = {{ data.subject_labels|safe }};
+    const subjectScores = {{ data.subject_averages|safe }};
+    
+    if (subjectLabels.length > 0) {
+        new Chart(ctxSubject, {
+            type: 'doughnut',
+            data: {
+                labels: subjectLabels,
+                datasets: [{
+                    data: subjectScores,
+                    backgroundColor: ['#4facfe', '#a18cd1', '#fbc2eb', '#f6d365', '#20c997'],
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                cutout: '70%'
+            }
+        });
+    } else {
+        document.getElementById('subjectDoughnutChart').outerHTML = '<div class="text-center text-muted p-5">Not enough data to calculate mastery.</div>';
+    }
+    
+    // 3. Assignment Bar Chart
+    const ctxAssn = document.getElementById('assignmentBarChart').getContext('2d');
+    const assnLabels = {{ data.assignment_labels|safe }};
+    const assnScores = {{ data.assignment_scores|safe }};
+    
+    if (assnLabels.length > 0) {
+        new Chart(ctxAssn, {
+            type: 'bar',
+            data: {
+                labels: assnLabels,
+                datasets: [{
+                    label: 'Grade (%)',
+                    data: assnScores,
+                    backgroundColor: successGreen,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+    } else {
+        document.getElementById('assignmentBarChart').outerHTML = '<div class="text-center text-muted p-5">No graded assignments yet.</div>';
+    }
+});
+</script>
+{% endblock %}
