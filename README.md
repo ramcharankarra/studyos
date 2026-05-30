@@ -7,6 +7,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Gemini API](https://img.shields.io/badge/Gemini_AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Render](https://img.shields.io/badge/Render-%46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com/)
+[![Tests](https://img.shields.io/badge/Tests-38%20Passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)](#)
 
 **StudyOS** is a comprehensive, feature-complete Learning Management System (LMS) enhanced by cutting-edge Generative AI (Google Gemini). It transforms traditional online learning by automating administrative overhead for teachers, and providing highly personalized, responsive tutoring and career guidance for students.
 
@@ -76,7 +77,19 @@ Traditional LMS platforms are static portals for uploading assignments. They lac
    ```bash
    python manage.py runserver
    ```
-   Access the application at `http://127.0.0.1:8000/`.
+    Access the application at `http://127.0.0.1:8000/`.
+
+## 🧪 Seeding Demo Data
+To populate the database with realistic, high-quality, pre-configured demo classrooms, quizzes, assignments, attendance sessions, and notifications for presentation or testing, run:
+```bash
+python manage.py seed_demo
+```
+*Note: This command is strictly guarded and will only execute when `DEBUG=True`.*
+
+To flush and re-seed the demo data at any time:
+```bash
+python manage.py seed_demo --flush
+```
 
 ## 🌍 Deployment Guide
 StudyOS is optimized for deployment on Render.
@@ -93,13 +106,20 @@ StudyOS is optimized for deployment on Render.
    - `ALLOWED_HOSTS`: `your-app.onrender.com`
 
 ## 📂 Documentation Structure
-Check the `/docs` folder for deep dives into the architecture and design of StudyOS:
-- [System Architecture](docs/architecture.md)
-- [Database Design & ER Diagram](docs/database-design.md)
-- [API & Service Overview](docs/api-overview.md)
-- [Deployment Guide](docs/deployment-guide.md)
-- [Recruiter Summary](docs/recruiter-summary.md)
-- [Future Roadmap](docs/future-roadmap.md)
+Check the `/docs` folder for deep dives into the architecture, design, and guides of StudyOS:
+- [System Architecture](docs/architecture.md) — Tech stack, service patterns, and AI flows.
+- [Database Design & ER Diagram](docs/database-design.md) — Comprehensive entity relationships.
+- [API & Service Overview](docs/api-overview.md) — URL routing and service structures.
+- [Deployment Guide](docs/deployment-guide.md) — Render and PostgreSQL walkthrough.
+- [Technical Interview Guide](docs/interview-guide.md) — 100+ Q&A covering Python, Django, database, and AI integrations.
+- [Demo Walkthrough Guide](docs/demo-walkthrough.md) — Step-by-step teacher and student workflows.
+- [Production Readiness Checklist](docs/production-checklist.md) — Final security and deployment audit checklist.
+- [Codebase Audit Report](docs/audit-report.md) — Standardized findings, refactoring accomplishments, and fixes.
+- [Security Hardening Report](docs/security-report.md) — Roles, permissions, and secret isolation verification.
+- [Performance & Query Report](docs/performance-report.md) — Aggregate optimizations, N+1 fixes, and metrics.
+- [Portfolio & Recruiter Assets](docs/portfolio-assets.md) — Elevator pitches, ATS resumes, and recruiter pitches.
+- [Recruiter Summary](docs/recruiter-summary.md) — Quick 1-page engineering highlights page.
+- [Future Roadmap](docs/future-roadmap.md) — Strategic phases for future evolution.
 
 ---
 *Built with ❤️ for modern education.*

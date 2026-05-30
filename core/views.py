@@ -95,6 +95,7 @@ def student_dashboard(request):
 
 def profile_view(request, username):
     from django.shortcuts import get_object_or_404
+    from django.db.models import Avg
     from .models import User
     from career_assistant.models import CareerRoadmap
     
@@ -104,26 +105,32 @@ def profile_view(request, username):
         context = {'profile_user': profile_user}
         return render(request, 'profile/teacher_profile.html', context)
         
-    # Student profile
-    quiz_attempts = QuizAttempt.objects.filter(student=profile_user, status='Submitted').order_by('-submitted_at')
-    assignment_submissions = AssignmentSubmission.objects.filter(student=profile_user, status='Graded').order_by('-submitted_at')
+    # Student profile — use aggregation to avoid N+1 queries
+    quiz_attempts = (
+        QuizAttempt.objects
+        .filter(student=profile_user, status='Submitted')
+        .select_related('quiz', 'quiz__classroom')
+        .order_by('-submitted_at')
+    )
+    assignment_submissions = (
+        AssignmentSubmission.objects
+        .filter(student=profile_user, status='Graded')
+        .select_related('assignment', 'assignment__classroom')
+        .order_by('-submitted_at')
+    )
     latest_roadmap = CareerRoadmap.objects.filter(student=profile_user).first()
     
-    # Simple badges/stats calculation
     total_quizzes = quiz_attempts.count()
-    avg_score = 0
-    if total_quizzes > 0:
-        total_pct = sum(a.percentage for a in quiz_attempts if a.percentage)
-        avg_score = total_pct / total_quizzes
+    avg_score = quiz_attempts.aggregate(avg=Avg('percentage'))['avg'] or 0
         
     context = {
         'profile_user': profile_user,
-        'quiz_attempts': quiz_attempts[:5], # Show recent 5
+        'quiz_attempts': quiz_attempts[:5],
         'assignment_submissions': assignment_submissions[:5],
         'latest_roadmap': latest_roadmap,
         'stats': {
             'total_quizzes': total_quizzes,
-            'avg_score': round(avg_score, 1) if avg_score else 0,
+            'avg_score': round(avg_score, 1),
             'total_assignments': assignment_submissions.count(),
         }
     }

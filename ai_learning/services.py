@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import time
 from django.utils import timezone
@@ -99,7 +102,7 @@ DO NOT give direct answers to assignments or quizzes without explaining the unde
     except Exception as e:
         response_time_ms = int((time.time() - start_time) * 1000)
         error_msg = str(e)
-        print(f"Error chatting with tutor: {error_msg}")
+        logger.error(f"Error chatting with tutor: {error_msg}")
         
         # Log Error
         AILog.objects.create(
@@ -178,7 +181,7 @@ def generate_student_insights(student):
         
         return True
     except Exception as e:
-        print(f"Error generating insights: {str(e)}")
+        logger.error(f"Error generating insights: {str(e)}")
         return False
 
 def generate_class_insights(classroom):
@@ -256,5 +259,5 @@ def generate_class_insights(classroom):
         
         return True
     except Exception as e:
-        print(f"Error generating class insights: {str(e)}")
+        logger.error(f"Error generating class insights: {str(e)}")
         return False

@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import json
 from google import genai
@@ -88,5 +91,5 @@ def generate_quiz_via_ai(topic: str, difficulty: str, num_questions: int, quiz_i
         return True
         
     except Exception as e:
-        print(f"Error generating quiz: {str(e)}")
+        logger.error(f"Error generating quiz: {str(e)}")
         return False

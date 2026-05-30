@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import json
 from google import genai
@@ -46,7 +49,7 @@ def analyze_resume_via_ai(resume_text: str):
         )
         return json.loads(response.text)
     except Exception as e:
-        print(f"Error analyzing resume: {e}")
+        logger.error(f"Error analyzing resume: {e}")
         return None
 
 def generate_career_roadmap_via_ai(dream_job: str):
@@ -79,5 +82,5 @@ def generate_career_roadmap_via_ai(dream_job: str):
         )
         return json.loads(response.text)
     except Exception as e:
-        print(f"Error generating roadmap: {e}")
+        logger.error(f"Error generating roadmap: {e}")
         return None

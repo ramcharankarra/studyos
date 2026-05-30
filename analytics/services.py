@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import json
 from google import genai
@@ -236,5 +239,5 @@ def generate_advanced_ai_analytics(classroom):
         
         return True
     except Exception as e:
-        print(f"Error generating AI analytics: {str(e)}")
+        logger.error(f"Error generating AI analytics: {str(e)}")
         return False

@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import json
 from google import genai
@@ -37,7 +40,7 @@ def extract_text_from_file(file_path, file_extension):
             with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 text = f.read()
     except Exception as e:
-        print(f"Error extracting text: {e}")
+        logger.error(f"Error extracting text: {e}")
         
     return text[:100000] # Hard limit to roughly fit in prompt limits safely
 
@@ -113,7 +116,7 @@ def generate_study_notes(study_note_id):
         return True
         
     except Exception as e:
-        print(f"Failed to generate study notes: {str(e)}")
+        logger.error(f"Failed to generate study notes: {str(e)}")
         note = StudyNote.objects.get(id=study_note_id)
         note.summary = f"Error during AI generation: {str(e)}"
         note.save()

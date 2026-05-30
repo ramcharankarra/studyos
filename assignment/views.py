@@ -10,18 +10,7 @@ from .forms import AssignmentForm, SubmissionForm, GradeForm
 from classroom.models import Classroom, Enrollment
 from .services import can_student_submit, calculate_assignment_stats
 
-# --- Mixins ---
-class TeacherRequiredMixin:
-    @method_decorator(login_required)
-    @method_decorator(user_passes_test(lambda u: u.is_teacher))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
-
-class StudentRequiredMixin:
-    @method_decorator(login_required)
-    @method_decorator(user_passes_test(lambda u: not u.is_teacher))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
+from core.mixins import TeacherRequiredMixin, StudentRequiredMixin
 
 # --- Teacher Views ---
 class AssignmentCreateView(TeacherRequiredMixin, CreateView):
