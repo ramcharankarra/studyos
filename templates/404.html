@@ -1,10 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 70vh;">
-    <h1 class="display-1 fw-bold text-primary mb-3">404</h1>
-    <h3 class="fw-bold mb-4">Page Not Found</h3>
-    <p class="text-muted max-w-md mx-auto mb-5">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
-    <a href="{% url 'home' %}" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm">Return Home</a>
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="text-center">
+        <i class="bi bi-compass text-warning" style="font-size: 8rem;"></i>
+        <h1 class="display-1 fw-bold text-dark mt-3">404</h1>
+        <h3 class="text-muted">Page Not Found</h3>
+        <p class="lead mt-3 mb-5">Oops! The page you are looking for does not exist. It might have been moved or deleted.</p>
+        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
+            <i class="bi bi-house-door me-2"></i> Return to Dashboard
+        </a>
+    </div>
 </div>
 {% endblock %}

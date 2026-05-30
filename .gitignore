@@ -3,26 +3,44 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Environments
-.env
+# Virtual environment
 .venv
 env/
 venv/
 ENV/
-env.bak/
-venv.bak/
+
+# Environment variables — NEVER COMMIT THIS
+.env
+.env.local
+.env.*.local
 
 # Django stuff:
 *.log
+logs/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+
+# User-uploaded media files
 media/
+
+# Static files collected for production
 staticfiles/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+# macOS
+.DS_Store
 
 # Editor directories and files
 .idea/
 .vscode/
 *.swp
 *.swo
-.DS_Store
+
+# Node.js / Frontend (legacy — not part of this project)
+node_modules/
+package-lock.json

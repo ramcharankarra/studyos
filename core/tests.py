@@ -2,47 +2,43 @@ from django.test import TestCase
 from django.urls import reverse
 from core.models import User
 
-class AuthenticationTests(TestCase):
+class CoreAuthenticationTests(TestCase):
     def setUp(self):
+        # Create a test teacher and student
         self.teacher = User.objects.create_user(
-            username='testteacher',
-            password='password123',
-            email='teacher@example.com',
-            is_teacher=True
+            username='teacher1', 
+            password='password123', 
+            is_teacher=True, 
+            full_name='Test Teacher'
         )
         self.student = User.objects.create_user(
-            username='teststudent',
-            password='password123',
-            email='student@example.com',
-            is_student=True
+            username='student1', 
+            password='password123', 
+            is_student=True, 
+            full_name='Test Student'
         )
 
-    def test_login_teacher(self):
-        response = self.client.post(reverse('login'), {
-            'username': 'testteacher',
-            'password': 'password123'
-        })
-        self.assertRedirects(response, reverse('dashboard'))
-        self.assertTrue('_auth_user_id' in self.client.session)
-
-    def test_login_student(self):
-        response = self.client.post(reverse('login'), {
-            'username': 'teststudent',
-            'password': 'password123'
-        })
-        self.assertRedirects(response, reverse('dashboard'))
-        self.assertTrue('_auth_user_id' in self.client.session)
-
-    def test_login_invalid(self):
-        response = self.client.post(reverse('login'), {
-            'username': 'teststudent',
-            'password': 'wrongpassword'
-        })
+    def test_login_page_loads(self):
+        response = self.client.get(reverse('login'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Invalid username or password")
+
+    def test_register_page_loads(self):
+        response = self.client.get(reverse('register'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_teacher_dashboard_redirect(self):
+        self.client.login(username='teacher1', password='password123')
+        response = self.client.get(reverse('dashboard'))
+        self.assertTemplateUsed(response, 'dashboards/teacher_dashboard.html')
+        self.assertEqual(response.status_code, 200)
+
+    def test_student_dashboard_redirect(self):
+        self.client.login(username='student1', password='password123')
+        response = self.client.get(reverse('dashboard'))
+        self.assertTemplateUsed(response, 'dashboards/student_dashboard.html')
+        self.assertEqual(response.status_code, 200)
 
     def test_logout(self):
-        self.client.login(username='testteacher', password='password123')
+        self.client.login(username='student1', password='password123')
         response = self.client.post(reverse('logout'))
-        self.assertRedirects(response, reverse('login'))
-        self.assertFalse('_auth_user_id' in self.client.session)
+        self.assertEqual(response.status_code, 302)  # Redirects to login

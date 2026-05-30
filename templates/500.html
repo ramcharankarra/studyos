@@ -1,10 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 70vh;">
-    <h1 class="display-1 fw-bold text-danger mb-3">500</h1>
-    <h3 class="fw-bold mb-4">Internal Server Error</h3>
-    <p class="text-muted max-w-md mx-auto mb-5">Oops! Something went wrong on our end. We are working to fix it. Please try again later.</p>
-    <a href="{% url 'home' %}" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm">Return Home</a>
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="text-center">
+        <i class="bi bi-exclamation-triangle text-secondary" style="font-size: 8rem;"></i>
+        <h1 class="display-1 fw-bold text-dark mt-3">500</h1>
+        <h3 class="text-muted">Internal Server Error</h3>
+        <p class="lead mt-3 mb-5">Something went wrong on our end. We're looking into it.</p>
+        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
+            <i class="bi bi-house-door me-2"></i> Return to Dashboard
+        </a>
+    </div>
 </div>
 {% endblock %}
